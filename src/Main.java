@@ -1,3 +1,4 @@
+import Objets.Planning;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.search.strategy.Search;
@@ -6,6 +7,8 @@ import org.chocosolver.solver.variables.IntVar;
 public class Main {
     
     public static void main(String[] args) {
+        
+        Planning planning = new Planning();
         
         int N = 100;
         // 1. Modelling part
