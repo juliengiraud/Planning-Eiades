@@ -8,39 +8,53 @@ public class Main {
     
     public static void main(String[] args) {
         
-        Planning planning = new Planning();
+        /*Planning planning = new Planning();
         
-        int N = 100;
         // 1. Modelling part
-        Model model = new Model("all-interval series of size "+ N);
 
         // 1.a declare the variables
-        IntVar[] S = model.intVarArray("s", N, 0, N - 1, false);
-        IntVar[] V = model.intVarArray("V", N - 1, 1, N - 1, false);
+        //IntVar heuresTravailJour = model.intVar("heuresTravailJour", new int[]{7, 10, 11});
+        // 21 = a*7+b*10+c*11 -> 
+        // a*7 -> v1
+        // b*10 -> v2
+        // c*11 -> v3
+        // v1 + v2 -> v1
+        // v1 + v3 -> v1
+        IntVar a, b, c;
+        a = model.intVar("a", new int[]{0,1,2,3});
+        b = model.intVar("b", new int[]{0,1,2});
+        c = model.intVar("c", new int[]{0,1,2});
+        IntVar v1 = model.intScaleView(a, 7);
+        IntVar v2 = model.intScaleView(b, 10);
+        IntVar v3 = model.intScaleView(c, 11);
+        
+        IntVar michel = model.intVar("michel", 21);
+        
 
         // 1.b post the constraints
-        for (int i = 0; i < N - 1; i++) {
-            model.distance(S[i + 1], S[i], "=", V[i]).post();
-        }
-        model.allDifferent(S).post();
-        model.allDifferent(V).post();
-        S[1].gt(S[0]).post();
-        V[1].gt(V[N - 2]).post();
-
+        //model.arithm(model.arithm(v1, "+", "v2"), "=", michel).post();
+        
         // 2. Solving part
         Solver solver = model.getSolver();
+        
+        while(solver.solve()){
+            // do something, e.g. print out variable values
+            
+        }
 
         // 2.a define a search strategy
-        solver.setSearch(Search.minDomLBSearch(S));
-        if(solver.solve()){
-            System.out.printf("All interval series of size %d%n", N);
-            for (int i = 0; i < N - 1; i++) {
-                System.out.printf("%d <%d> ", 
-                                    S[i].getValue(), 
-                                    V[i].getValue());
-                System.out.println("\n");
-            }
-            System.out.printf("%d", S[N - 1].getValue());
-        }
+        */
+        //int i, j;
+        Model model = new Model("Test");
+        
+        // Model objective function 3X + 4Y
+        IntVar OBJ = model.intVar("objective", 0, 999);
+        
+        //model.scalar(new IntVar[2], new int[]{3,4}, "l", OBJ).post();
+        // Specify objective
+        model.setObjective(Model.MAXIMIZE, OBJ);
+        // Compute optimum
+        model.getSolver().solve();
+        
     }
 }
