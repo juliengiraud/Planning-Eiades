@@ -1,110 +1,117 @@
-
 import static org.chocosolver.solver.search.strategy.Search.*;
-import Objets.Planning;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.chocosolver.solver.Model;
-import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
-import org.chocosolver.solver.exception.ContradictionException;
-import org.chocosolver.solver.objective.ParetoOptimizer;
-import org.chocosolver.solver.search.strategy.Search;
+import static org.chocosolver.solver.constraints.nary.cnf.LogOp.*;
+import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
 
 public class Main {
     
     public static void main(String[] args) {
         
-        /*Planning planning = new Planning();
-        
-        // 1. Modelling part
-
-        // 1.a declare the variables
-        //IntVar heuresTravailJour = model.intVar("heuresTravailJour", new int[]{7, 10, 11});
-        // 21 = a*7+b*10+c*11 -> 
-        // a*7 -> v1
-        // b*10 -> v2
-        // c*11 -> v3
-        // v1 + v2 -> v1
-        // v1 + v3 -> v1
-        IntVar a, b, c;
-        a = model.intVar("a", new int[]{0,1,2,3});
-        b = model.intVar("b", new int[]{0,1,2});
-        c = model.intVar("c", new int[]{0,1,2});
-        IntVar v1 = model.intScaleView(a, 7);
-        IntVar v2 = model.intScaleView(b, 10);
-        IntVar v3 = model.intScaleView(c, 11);
-        
-        IntVar michel = model.intVar("michel", 21);
-        
-
-        // 1.b post the constraints
-        //model.arithm(model.arithm(v1, "+", "v2"), "=", michel).post();
-        
-        // 2. Solving part
-        Solver solver = model.getSolver();
-        
-        while(solver.solve()){
-            // do something, e.g. print out variable values
-            
-        }
-
-        // 2.a define a search strategy
-        *//*
-        //int i, j;
-        Model model = new Model("Test");
-        
-        // Model objective function 3X + 4Y
-        IntVar OBJ = model.intVar("objective", 0, 999);
-        
-        //model.scalar(new IntVar[2], new int[]{3,4}, "l", OBJ).post();
-        // Specify objective
-        model.setObjective(Model.MAXIMIZE, OBJ);
-        // Compute optimum
-        model.getSolver().solve();*/
-        // simple model
         Model model = new Model();
-        /*IntVar a = model.intVar("a", new int[]{0, 1, 2, 3, 10});
-        IntVar b = model.intVar("b", new int[]{0, 1, 2, 3, 10});
-        IntVar c = model.intVar("c", new int[]{0, 1, 2, 3});
-        IntVar s = model.intVar("s", 20);
         
-        model.arithm(a, "+", b, "=", s).post();*/
-
+        /*IntVar[] a = model.intVarArray(5, new int[]{0, 1, 2, 3, 4});
+        IntVar[] b = model.intVarArray(5, 0, 100, false);
+        IntVar s = model.intVar("s", new int[]{20, 21, 25, 29, 30, 33, 36, 39});
         
-        IntVar a = model.intVar("a", new int[]{0, 1, 2, 3, 4});
-        IntVar a2 = model.intVar("a2", 0, 100, false);
-        model.arithm(a, "*", model.intVar("a3", 7), "=", a2).post();
+        model.arithm(a[0], "*", model.intVar(7), "=", b[0]).post(); // b[0] = 7*a
+        model.arithm(a[1], "*", model.intVar(10), "=", b[1]).post(); // b[1] = 10*b
+        model.arithm(a[2], "*", model.intVar(11), "=", b[2]).post(); // b[2] = 11*c
+        model.arithm(b[0], "+", b[1], "=", b[3]).post(); // b[3] = 7*a+10*b
+        model.arithm(b[3], "+", b[2], "=", s).post(); // s = 7*a+10*b+11*c*/
         
-        IntVar b = model.intVar("b", new int[]{0, 1, 2, 3, 4});
-        IntVar b2 = model.intVar("b2", 0, 100, false);
-        model.arithm(b, "*", model.intVar("b3", 10), "=", b2).post();
+        // s=21, s=j1+j2+j3+j4+j5
         
-        IntVar c = model.intVar("c", new int[]{0, 1, 2, 3, 4});
-        IntVar c2 = model.intVar("c2", 0, 100, false);
-        model.arithm(c, "*", model.intVar("c3", 11), "=", c2).post();
+        IntVar s = model.intVar("s", new int[]{20, 21, 25, 29, 30, 33, 36, 39});
+        IntVar[] j = model.intVarArray(5, new int[]{0, 7, 10, 11});
+        IntVar[] t = model.intVarArray(4, 0, 100, false);
         
-        IntVar s = model.intVar("s", 0, 100, false);
-        IntVar s2 = model.intVar("s2", 0, 100, false);
-        model.arithm(a2, "+", b2, "=", s2).post();
+        model.arithm(j[0], "+", j[1], "=", t[0]).post();
+        model.arithm(t[0], "+", j[2], "=", t[1]).post();
+        model.arithm(t[1], "+", j[3], "=", t[2]).post();
+        model.arithm(t[2], "+", j[4], "=", t[3]).post();
         
-        //IntVar s3 = model.intVar("s3", new int[]{20, 21, 25, 29, 30, 33, 36, 39});
-        IntVar s3 = model.intVar("s3", 20);
-        model.arithm(s2, "+", c2, "=", s3).post();
+        model.allEqual(t[3], s).post();
         
+        // Contraintes des jours de repo
+        // (lundi=0 xor mercredi=0 xor vendredi=0) and mardi!=0 and jeudi!=0)
+        // or (lundi=0 xor mercredi=0 xor vendredi=0) and (mardi=0 xor jeudi=0)
+        BoolVar[] b = model.boolVarArray(5);
+        b[0] = model.allEqual(j[0], model.intVar(0)).reify(); // b[0] <=> (lundi == 0)
+        b[1] = model.allEqual(j[1], model.intVar(0)).reify(); // b[1] <=> (mardi == 0)
+        b[2] = model.allEqual(j[2], model.intVar(0)).reify(); // b[2] <=> (mercredi == 0)
+        b[3] = model.allEqual(j[3], model.intVar(0)).reify(); // b[3] <=> (jeudi == 0)
+        b[4] = model.allEqual(j[4], model.intVar(0)).reify(); // b[4] <=> (vendredi == 0)
         
+        /*model.addClauses(
+            or(
+                and(b[0],       b[1].not(), b[2].not(), b[3].not(), b[4].not()),
+                and(b[0],       b[1],       b[2].not(), b[3].not(), b[4].not()),
+                //and(b[0],       b[1].not(), b[2].not(), b[3],       b[4].not()),
+                
+                and(b[0].not(), b[1].not(), b[2],       b[3].not(), b[4].not()),
+                //and(b[0].not(), b[1],       b[2],       b[3].not(), b[4].not()),
+                and(b[0].not(), b[1].not(), b[2],       b[3],       b[4].not()),
+                
+                //and(b[0].not(), b[1].not(), b[2].not(), b[3].not(), b[4]),
+                and(b[0].not(), b[1],       b[2].not(), b[3].not(), b[4]),
+                and(b[0].not(), b[1].not(), b[2].not(), b[3],       b[4])
+            )
+        );*/
+        
+        // Version optimisée
+        model.addClauses(
+            and(
+                or(
+                    b[0].not(),
+                    b[2].not()
+                ),
+                or(
+                    b[0].not(),
+                    b[4].not()
+                ),
+                or(
+                    b[0],
+                    b[2],
+                    b[4]
+                ),
+                or(
+                    b[1].not(),
+                    b[3].not()
+                ),
+                or(
+                    b[2].not(),
+                    b[4].not()
+                )
+            )
+        );
+        
+        // Contraintes des 7h et 11h
 
         Solver solver = model.getSolver();
         
-        solver.setSearch(intVarSearch(a, b));
-
-        while(solver.solve()) {
-            System.out.println("7" + " * " + a.getValue() + " + " + "10" + " * " +
-            b.getValue() + " + " + "11" + " * " + c.getValue() + " = " + s3.getValue());
-            /*System.out.println("a=" + a.getValue() + " b=" + b.getValue() +
-                    " c=" + c.getValue() + " s=" + s.getValue());*/
-        }
+        solver.setSearch(intVarSearch(j[0], j[1], j[2], j[3], j[4]));
         
+        
+        int i = 0;
+        while(solver.solve()) {
+            System.out.println("j1 = " + j[0].getValue() +
+                ", j2 = " + j[1].getValue() +
+                ", j3 = " + j[2].getValue() +
+                ", j4 = " + j[3].getValue() +
+                ", j5 = " + j[4].getValue() +
+                ", s = " + s.getValue()/* +
+                ", t[0] = " + t[0].getValue() +
+                ", t[1] = " + t[1].getValue() +
+                ", t[2] = " + t[2].getValue() +
+                ", t[3] = " + t[3].getValue()*/);
+            /*System.out.println("a = " + a[0].getValue() +
+                ", b = " + a[1].getValue() +
+                ", c = " + a[2].getValue() +
+                ", s = " + s.getValue());*/
+            i++;
+        }
+        System.out.println("Il y a " + i + " solutions");
     }
 }
