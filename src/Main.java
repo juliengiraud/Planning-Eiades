@@ -35,7 +35,7 @@ public class Main {
         BoolVar[][] _b = model.boolVarMatrix(16, 10);
         int i, k, l, e;
                 
-        for (e = 0; e < 2; e++) {
+        for (e = 0; e < 3; e++) {
             // Ajout de la contrainte de temps sur une semaine
             model.arithm(s[e], "*", model.intVar(2), "=", t[e][0]).post(); // t[e][0] contient les heures à faire en 2 semaines
             model.allEqual(t[e][1], j[e][0]).post(); // t[e][1] = j1
@@ -114,7 +114,8 @@ public class Main {
         
         solver.setSearch(intVarSearch(
             j[0][0], j[0][1], j[0][2], j[0][3], j[0][4], j[0][5], j[0][6], j[0][7], j[0][8], j[0][9],
-            j[1][0], j[1][1], j[1][2], j[1][3], j[1][4], j[1][5], j[1][6], j[1][7], j[1][8], j[1][9]
+            j[1][0], j[1][1], j[1][2], j[1][3], j[1][4], j[1][5], j[1][6], j[1][7], j[1][8], j[1][9],
+            j[2][0], j[2][1], j[2][2], j[2][3], j[2][4], j[2][5], j[2][6], j[2][7], j[2][8], j[2][9]
         ));
         
         
@@ -149,7 +150,21 @@ public class Main {
                 ", j8 = " + j[1][7].getValue() +
                 ", j9 = " + j[1][8].getValue() +
                 ", j10 = " + j[1][9].getValue() +
-                ", s = " + s[1].getValue() + "\n");
+                ", s = " + s[1].getValue() + "\n" +
+                
+                "MP. CHAUTARD, " +
+                "j1 = " + j[2][0].getValue() +
+                ", j2 = " + j[2][1].getValue() +
+                ", j3 = " + j[2][2].getValue() +
+                ", j4 = " + j[2][3].getValue() +
+                ", j5 = " + j[2][4].getValue() +
+                ", j6 = " + j[2][5].getValue() +
+                ", j7 = " + j[2][6].getValue() +
+                ", j8 = " + j[2][7].getValue() +
+                ", j9 = " + j[2][8].getValue() +
+                ", j10 = " + j[2][9].getValue() +
+                ", s = " + s[2].getValue() + "\n"
+            );
             i++;
         }
         System.out.println("Il y a " + i + " solutions");
