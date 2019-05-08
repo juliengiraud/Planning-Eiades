@@ -11,6 +11,17 @@ public class Main {
         
         Model model = new Model();
         
+        /*
+        Les heures possibles sont :
+        6h45 -------- 13h45
+        6h45 ------------------ 16h45
+        6h45 ------------------------ 17h45
+             7h30 --------- 14h
+             7h30 ------------------------- 17h30
+             7h30 ------------------------------- 18h30
+                  12h --------------------------------- 19h
+        */
+        
         IntVar[] s = model.intVarArray(16, new int[]{20, 21, 25, 29, 28, 30, 33, 35, 36, 39});
         model.allEqual(s[0], model.intVar(21)).post(); // B. MICHELIN, 3*7
         model.allEqual(s[1], model.intVar(36)).post(); // N. JEANJEAN, nb max de 11h : 10 (rien à faire)
@@ -51,29 +62,6 @@ public class Main {
             model.arithm(t[e][12], "<=", model.intOffsetView(s[e], +6)).post(); // varier d'un jour de travail (- de 14h)
             model.allEqual(t[e][5], t[e][12]).post(); // temps de travail de la première semaine = temps voulu +- x
             model.allEqual(t[e][10], t[e][0]).post(); // j1+j2+j3+j4+j5+j6+j7+j8+j9+j10 = 2*s
-
-            // Contraintes des jours de repo
-            // (lundi=0 xor mercredi=0 xor vendredi=0) and mardi!=0 and jeudi!=0)
-            // or (lundi=0 xor mercredi=0 xor vendredi=0) and (mardi=0 xor jeudi=0)
-            // Version optimisée : ( !a + !c) * ( !a + !e) * (a + c + e) * ( !b + !d) * ( !c + !e) OU 20h ou 21h
-            // IL FAUDRA MODIFIER LE "OU 20H OU 21H" EN "OU PLUS DE 2 JOURS DE REPO"
-            for (i = 0; i < 10; i++) {
-                b[e][i] = model.allEqual(j[e][i], model.intVar(0)).reify(); // j = 0 pour ce jour
-                _b[e][i] = b[e][i].not(); // j != 0 pour ce jour
-            }
-            /*for (i = 0; i < 2; i++) { // pour chaque semaine
-                model.addClauses(or(
-                    model.allEqual(s[e], model.intVar(20)).reify(),
-                    model.allEqual(s[e], model.intVar(21)).reify(),
-                    and(
-                        or(_b[e][0 + 5*i], _b[e][2 + 5*i]),
-                        or(_b[e][0 + 5*i], _b[e][4 + 5*i]),
-                        or(b[e][0 + 5*i], b[e][2 + 5*i], b[e][4 + 5*i]),
-                        or(_b[e][1 + 5*i], _b[e][3 + 5*i]),
-                        or(_b[e][2 + 5*i], _b[e][4 + 5*i]))
-                    )
-                );
-            }*/
 
             // t[e][13] : nombre de 7h la première semaine
             model.ifThenElse(
@@ -232,6 +220,13 @@ public class Main {
             model.arithm(t[e][57], "+", t[e][54], "=", t[e][58]).post();
             model.arithm(t[e][58], "+", t[e][55], "=", t[e][49]).post();
             
+            // t[e][67] : nombre de jours de repo sur lundi-mercredi-vendredi de la première semaine
+            model.arithm(t[e][51], "+", t[e][53], "=", t[e][69]).post();
+            model.arithm(t[e][69], "+", t[e][55], "=", t[e][67]).post();
+            
+            // t[e][71] : nombre de jours de repo sur mardi-jeudi de la première semaine
+            model.arithm(t[e][52], "+", t[e][54], "=", t[e][71]).post();
+            
             // t[e][50] : nombre de jour de repo de la deuxième semaine
             model.ifThenElse(
                 model.allEqual(j[e][5], model.intVar(0)),
@@ -245,8 +240,8 @@ public class Main {
             );
             model.ifThenElse(
                 model.allEqual(j[e][7], model.intVar(0)),
-                model.allEqual(t[e][59], model.intVar(1)),
-                model.allEqual(t[e][59], model.intVar(0))
+                model.allEqual(t[e][61], model.intVar(1)),
+                model.allEqual(t[e][61], model.intVar(0))
             );
             model.ifThenElse(
                 model.allEqual(j[e][8], model.intVar(0)),
@@ -262,6 +257,47 @@ public class Main {
             model.arithm(t[e][64], "+", t[e][61], "=", t[e][65]).post();
             model.arithm(t[e][65], "+", t[e][62], "=", t[e][66]).post();
             model.arithm(t[e][66], "+", t[e][63], "=", t[e][50]).post();
+            
+            // t[e][68] nombre de jours de repo sur lundi-mercredi-vendredi de la deuxième semaine
+            model.arithm(t[e][59], "+", t[e][61], "=", t[e][70]).post();
+            model.arithm(t[e][70], "+", t[e][63], "=", t[e][68]).post();
+            
+            // t[e][72] nombre de jours de repo sur mardi-jeudi de la deuxième semaine
+            model.arithm(t[e][60], "+", t[e][62], "=", t[e][72]).post();
+
+            // Contraintes des jours de repo
+            // Si 1 jour : soit lundi soit mercredi soit vendredi
+            // Si 2 jours : (soit lundi soit mercredi soit vendredi) et (soit mardi soit jeudi)
+            // Sinon pas de contrainte ? (pas mardi et jeudi en meme temps ?)
+            
+            // Si 1 jour, semaine 1 :
+            model.ifThen(
+                model.arithm(t[e][49], "=", 1),
+                model.arithm(t[e][67], "=", 1) // lundi-mercredi-vendredi
+            );
+            // Si 1 jour, semaine 2 :
+            model.ifThen(
+                model.allEqual(t[e][50], model.intVar(1)),
+                model.allEqual(t[e][68], model.intVar(1)) // lundi-mercredi-vendredi
+            );
+            // Si 2 jours, semaine 1 :
+            model.ifThen(
+                model.allEqual(t[e][49], model.intVar(2)),
+                model.allEqual(t[e][67], model.intVar(1)) // lundi-mercredi-vendredi
+            );
+            model.ifThen(
+                model.allEqual(t[e][49], model.intVar(2)),
+                model.allEqual(t[e][71], model.intVar(1)) // mardi-jeudi
+            );
+            // Si 2 jours, semaine 2 :
+            model.ifThen(
+                model.allEqual(t[e][50], model.intVar(2)),
+                model.allEqual(t[e][68], model.intVar(1)) // lundi-mercredi-vendredi
+            );
+            model.ifThen(
+                model.allEqual(t[e][50], model.intVar(2)),
+                model.allEqual(t[e][72], model.intVar(1)) // mardi-jeudi
+            );
             
             
             // Contraintes des 7h et 11h : si on fait un 11h, on ne fait pas de 7h
