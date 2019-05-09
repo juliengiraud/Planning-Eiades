@@ -64,62 +64,22 @@ public class Main {
             model.allEqual(t[e][10], t[e][0]).post(); // j1+j2+j3+j4+j5+j6+j7+j8+j9+j10 = 2*s
 
             // t[e][13] : nombre de 7h la première semaine
-            model.ifThenElse(
-                model.allEqual(j[e][0], model.intVar(7)),
-                model.allEqual(t[e][17], model.intVar(1)), // nombre de 7h du 1er jour
-                model.allEqual(t[e][17], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][1], model.intVar(7)),
-                model.allEqual(t[e][18], model.intVar(1)), // nombre de 7h du 2em jour
-                model.allEqual(t[e][18], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][2], model.intVar(7)),
-                model.allEqual(t[e][19], model.intVar(1)), // nombre de 7h du 3em jour
-                model.allEqual(t[e][19], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][3], model.intVar(7)),
-                model.allEqual(t[e][20], model.intVar(1)), // nombre de 7h du 4em jour
-                model.allEqual(t[e][20], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][4], model.intVar(7)),
-                model.allEqual(t[e][21], model.intVar(1)), // nombre de 7h du 5em jour
-                model.allEqual(t[e][21], model.intVar(0))
-            );
+            t[e][17] = model.allEqual(j[e][0], model.intVar(7)).reify(); // nombre de 7h du 1er jour
+            t[e][18] = model.allEqual(j[e][1], model.intVar(7)).reify(); // nombre de 7h du 2em jour
+            t[e][19] = model.allEqual(j[e][2], model.intVar(7)).reify(); // nombre de 7h du 3em jour
+            t[e][20] = model.allEqual(j[e][3], model.intVar(7)).reify(); // nombre de 7h du 4em jour
+            t[e][21] = model.allEqual(j[e][4], model.intVar(7)).reify(); // nombre de 7h du 5em jour
             model.arithm(t[e][17], "+", t[e][18], "=", t[e][22]).post();
             model.arithm(t[e][22], "+", t[e][19], "=", t[e][23]).post();
             model.arithm(t[e][23], "+", t[e][20], "=", t[e][24]).post();
             model.arithm(t[e][24], "+", t[e][21], "=", t[e][13]).post();
             
             // t[e][14] : nombre de 7h la deuxième semaine
-            model.ifThenElse(
-                model.allEqual(j[e][5], model.intVar(7)),
-                model.allEqual(t[e][25], model.intVar(1)), // nombre de 7h du 1er jour
-                model.allEqual(t[e][25], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][6], model.intVar(7)),
-                model.allEqual(t[e][26], model.intVar(1)), // nombre de 7h du 2em jour
-                model.allEqual(t[e][26], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][7], model.intVar(7)),
-                model.allEqual(t[e][27], model.intVar(1)), // nombre de 7h du 3em jour
-                model.allEqual(t[e][27], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][8], model.intVar(7)),
-                model.allEqual(t[e][28], model.intVar(1)), // nombre de 7h du 4em jour
-                model.allEqual(t[e][28], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][9], model.intVar(7)),
-                model.allEqual(t[e][29], model.intVar(1)), // nombre de 7h du 5em jour
-                model.allEqual(t[e][29], model.intVar(0))
-            );
+            t[e][25] = model.allEqual(j[e][5], model.intVar(7)).reify(); // nombre de 7h du 1er jour
+            t[e][26] = model.allEqual(j[e][6], model.intVar(7)).reify(); // nombre de 7h du 2em jour
+            t[e][27] = model.allEqual(j[e][7], model.intVar(7)).reify(); // nombre de 7h du 3em jour
+            t[e][28] = model.allEqual(j[e][8], model.intVar(7)).reify();// nombre de 7h du 4em jour
+            t[e][29] = model.allEqual(j[e][9], model.intVar(7)).reify(); // nombre de 7h du 5em jour
             model.arithm(t[e][25], "+", t[e][26], "=", t[e][30]).post();
             model.arithm(t[e][30], "+", t[e][27], "=", t[e][31]).post();
             model.arithm(t[e][31], "+", t[e][28], "=", t[e][32]).post();
@@ -127,62 +87,22 @@ public class Main {
             
             
             // t[e][15] : nombre de 11h la première semaine
-            model.ifThenElse(
-                model.allEqual(j[e][0], model.intVar(11)),
-                model.allEqual(t[e][33], model.intVar(1)), // nombre de 11h du 1er jour
-                model.allEqual(t[e][33], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][1], model.intVar(11)),
-                model.allEqual(t[e][34], model.intVar(1)), // nombre de 11h du 2em jour
-                model.allEqual(t[e][34], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][2], model.intVar(11)),
-                model.allEqual(t[e][35], model.intVar(1)), // nombre de 11h du 3em jour
-                model.allEqual(t[e][35], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][3], model.intVar(11)),
-                model.allEqual(t[e][36], model.intVar(1)), // nombre de 11h du 4em jour
-                model.allEqual(t[e][36], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][4], model.intVar(11)),
-                model.allEqual(t[e][37], model.intVar(1)), // nombre de 11h du 5em jour
-                model.allEqual(t[e][37], model.intVar(0))
-            );
+            t[e][33] = model.allEqual(j[e][0], model.intVar(11)).reify(); // nombre de 11h du 1er jour
+            t[e][34] = model.allEqual(j[e][1], model.intVar(11)).reify(); // nombre de 11h du 2em jour
+            t[e][35] = model.allEqual(j[e][2], model.intVar(11)).reify(); // nombre de 11h du 3em jour
+            t[e][36] = model.allEqual(j[e][3], model.intVar(11)).reify(); // nombre de 11h du 4em jour
+            t[e][37] = model.allEqual(j[e][4], model.intVar(11)).reify(); // nombre de 11h du 5em jour
             model.arithm(t[e][33], "+", t[e][34], "=", t[e][38]).post();
             model.arithm(t[e][38], "+", t[e][35], "=", t[e][39]).post();
             model.arithm(t[e][39], "+", t[e][33], "=", t[e][40]).post();
             model.arithm(t[e][40], "+", t[e][37], "=", t[e][15]).post();
             
             // t[e][16] : nombre de 11h la deuxième semaine
-            model.ifThenElse(
-                model.allEqual(j[e][5], model.intVar(11)),
-                model.allEqual(t[e][41], model.intVar(1)), // nombre de 11h du 1er jour
-                model.allEqual(t[e][41], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][6], model.intVar(11)),
-                model.allEqual(t[e][42], model.intVar(1)), // nombre de 11h du 2em jour
-                model.allEqual(t[e][42], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][7], model.intVar(11)),
-                model.allEqual(t[e][43], model.intVar(1)), // nombre de 11h du 3em jour
-                model.allEqual(t[e][43], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][8], model.intVar(11)),
-                model.allEqual(t[e][44], model.intVar(1)), // nombre de 11h du 4em jour
-                model.allEqual(t[e][44], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][9], model.intVar(11)),
-                model.allEqual(t[e][45], model.intVar(1)), // nombre de 11h du 5em jour
-                model.allEqual(t[e][45], model.intVar(0))
-            );
+            t[e][41] = model.allEqual(j[e][5], model.intVar(11)).reify(); // nombre de 11h du 1er jour
+            t[e][42] = model.allEqual(j[e][6], model.intVar(11)).reify(); // nombre de 11h du 2em jour
+            t[e][43] = model.allEqual(j[e][7], model.intVar(11)).reify(); // nombre de 11h du 3em jour
+            t[e][44] = model.allEqual(j[e][8], model.intVar(11)).reify(); // nombre de 11h du 4em jour
+            t[e][45] = model.allEqual(j[e][9], model.intVar(11)).reify(); // nombre de 11h du 5em jour
             model.arithm(t[e][41], "+", t[e][42], "=", t[e][46]).post();
             model.arithm(t[e][46], "+", t[e][43], "=", t[e][47]).post();
             model.arithm(t[e][47], "+", t[e][44], "=", t[e][48]).post();
@@ -190,31 +110,11 @@ public class Main {
             
             
             // t[e][49] : nombre de jours de repo de la première semaine
-            model.ifThenElse(
-                model.allEqual(j[e][0], model.intVar(0)),
-                model.allEqual(t[e][51], model.intVar(1)),
-                model.allEqual(t[e][51], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][1], model.intVar(0)),
-                model.allEqual(t[e][52], model.intVar(1)),
-                model.allEqual(t[e][52], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][2], model.intVar(0)),
-                model.allEqual(t[e][53], model.intVar(1)),
-                model.allEqual(t[e][53], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][3], model.intVar(0)),
-                model.allEqual(t[e][54], model.intVar(1)),
-                model.allEqual(t[e][54], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][4], model.intVar(0)),
-                model.allEqual(t[e][55], model.intVar(1)),
-                model.allEqual(t[e][55], model.intVar(0))
-            );
+            t[e][51] = model.allEqual(j[e][0], model.intVar(0)).reify();
+            t[e][52] = model.allEqual(j[e][1], model.intVar(0)).reify();
+            t[e][53] = model.allEqual(j[e][2], model.intVar(0)).reify();
+            t[e][54] = model.allEqual(j[e][3], model.intVar(0)).reify();
+            t[e][55] = model.allEqual(j[e][4], model.intVar(0)).reify();
             model.arithm(t[e][51], "+", t[e][52], "=", t[e][56]).post();
             model.arithm(t[e][56], "+", t[e][53], "=", t[e][57]).post();
             model.arithm(t[e][57], "+", t[e][54], "=", t[e][58]).post();
@@ -228,31 +128,11 @@ public class Main {
             model.arithm(t[e][52], "+", t[e][54], "=", t[e][71]).post();
             
             // t[e][50] : nombre de jour de repo de la deuxième semaine
-            model.ifThenElse(
-                model.allEqual(j[e][5], model.intVar(0)),
-                model.allEqual(t[e][59], model.intVar(1)),
-                model.allEqual(t[e][59], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][6], model.intVar(0)),
-                model.allEqual(t[e][60], model.intVar(1)),
-                model.allEqual(t[e][60], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][7], model.intVar(0)),
-                model.allEqual(t[e][61], model.intVar(1)),
-                model.allEqual(t[e][61], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][8], model.intVar(0)),
-                model.allEqual(t[e][62], model.intVar(1)),
-                model.allEqual(t[e][62], model.intVar(0))
-            );
-            model.ifThenElse(
-                model.allEqual(j[e][9], model.intVar(0)),
-                model.allEqual(t[e][63], model.intVar(1)),
-                model.allEqual(t[e][63], model.intVar(0))
-            );
+            t[e][59] = model.allEqual(j[e][5], model.intVar(0)).reify();
+            t[e][60] = model.allEqual(j[e][6], model.intVar(0)).reify();
+            t[e][61] = model.allEqual(j[e][7], model.intVar(0)).reify();
+            t[e][62] = model.allEqual(j[e][8], model.intVar(0)).reify();
+            t[e][63] = model.allEqual(j[e][9], model.intVar(0)).reify();
             model.arithm(t[e][59], "+", t[e][60], "=", t[e][64]).post();
             model.arithm(t[e][64], "+", t[e][61], "=", t[e][65]).post();
             model.arithm(t[e][65], "+", t[e][62], "=", t[e][66]).post();
@@ -348,9 +228,9 @@ public class Main {
             j[10][0], j[10][1], j[10][2], j[10][3], j[10][4], j[10][5], j[10][6], j[10][7], j[10][8], j[10][9],
             j[11][0], j[11][1], j[11][2], j[11][3], j[11][4], j[11][5], j[11][6], j[11][7], j[11][8], j[11][9],
             j[12][0], j[12][1], j[12][2], j[12][3], j[12][4], j[12][5], j[12][6], j[12][7], j[12][8], j[12][9],
-            j[13][0], j[13][1], j[13][2], j[13][3], j[13][4], j[13][5], j[13][6], j[13][7], j[13][8], j[13][9],
-            j[14][0], j[14][1], j[14][2], j[14][3], j[14][4], j[14][5], j[14][6], j[14][7], j[14][8], j[14][9],
-            j[15][0], j[15][1], j[15][2], j[15][3], j[15][4], j[15][5], j[15][6], j[15][7], j[15][8], j[15][9]
+            j[13][0], j[13][1], j[13][2]//, j[13][3], j[13][4], j[13][5], j[13][6], j[13][7], j[13][8], j[13][9],
+            //j[14][0], j[14][1], j[14][2], j[14][3], j[14][4], j[14][5], j[14][6], j[14][7], j[14][8], j[14][9],
+            //j[15][0], j[15][1], j[15][2], j[15][3], j[15][4], j[15][5], j[15][6], j[15][7], j[15][8], j[15][9]
         ));
         
         i = 0;
