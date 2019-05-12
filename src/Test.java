@@ -16,22 +16,24 @@ public class Test {
         
         
         IntVar n = model.intVar(0, 3);
-        IntVar nb7h = model.intVar(0, 10);
-        IntVar nb11h = model.intVar(0, 10);
+        IntVar n1 = model.intVar(0, 10);
+        IntVar n2 = model.intVar(0, 10);
+        IntVar n3 = model.intVar(0, 10);
+        IntVar[] test = {n1, n2, n3};
         
-        
-        model.arithm(nb7h, "*", nb11h, "=", 0).post();
+        model.count(9, test, model.intVar(4)).post();
         
         int i = 0, k, l, e;
         
         Solver solver = model.getSolver();
         
-        solver.setSearch(intVarSearch(nb7h, nb11h));
+        solver.setSearch(intVarSearch(test));
         
         while(solver.solve()) {
             System.out.println(
-                "nb7h = " + nb7h.getValue() +
-                ", nb11h = " + nb11h.getValue()
+                "n1 = " + n1.getValue() +
+                ", n2 = " + n2.getValue() +
+                ", n3 = " + n1.getValue()
             );
             i++;
         }
