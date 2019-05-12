@@ -16,36 +16,26 @@ public class Test {
         
         
         IntVar n = model.intVar(0, 3);
-        IntVar lmv = model.intVar(0, 10);
-        IntVar mj = model.intVar(0, 10);
+        IntVar nb7h = model.intVar(0, 10);
+        IntVar nb11h = model.intVar(0, 10);
         
-        model.arithm(lmv, "+", mj, "=", n).post();
         
-        // lmj <= n
-        model.arithm(lmv, "<=", n).post();
+        model.arithm(nb7h, "*", nb11h, "=", 0).post();
         
-        // lmv - mj < 2
-        model.arithm(lmv, "-", mj, "<", 2).post();
-        
-        // mj - lmv < 2
-        model.arithm(mj, "-", lmv, "<", 2).post();
-        
-        // mlv * n >= n
-        model.arithm(lmv, "*", n, ">=", n).post();
-        
-        int i, k, l, e;
+        int i = 0, k, l, e;
         
         Solver solver = model.getSolver();
         
-        solver.setSearch(intVarSearch(lmv, mj));
+        solver.setSearch(intVarSearch(nb7h, nb11h));
         
         while(solver.solve()) {
             System.out.println(
-                "lmv = " + lmv.getValue() +
-                ", mj = " + mj.getValue() +
-                ", n = " + n.getValue()
+                "nb7h = " + nb7h.getValue() +
+                ", nb11h = " + nb11h.getValue()
             );
+            i++;
         }
+        System.out.println("Il y a " + i + " solutions");
         
     }
     
