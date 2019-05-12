@@ -42,8 +42,6 @@ public class Main {
         
         IntVar[][] j = model.intVarMatrix(16, 10, new int[]{0, 7, 10, 11}); // nombre d'heures de travail pour un jour
         IntVar[][] t = model.intVarMatrix(16, 100, 0, 100, false); // variables secondaires
-        BoolVar[][] b = model.boolVarMatrix(16, 10);
-        BoolVar[][] _b = model.boolVarMatrix(16, 10);
         int i, k, l, e;
                 
         for (e = 0; e < 16; e++) {
@@ -148,39 +146,24 @@ public class Main {
             // Contraintes des jours de repo
             // Si 1 jour : soit lundi soit mercredi soit vendredi
             // Si 2 jours : (soit lundi soit mercredi soit vendredi) et (soit mardi soit jeudi)
-            // Sinon pas de contrainte ? (pas mardi et jeudi en meme temps ?)
+            // Sinon (si 3 jours) : pas de contraintes
             
-            // Si 1 jour, semaine 1 :
-            model.ifThen(
-                model.arithm(t[e][49], "=", 1),
-                model.arithm(t[e][67], "=", 1) // lundi-mercredi-vendredi
-            );
-            // Si 1 jour, semaine 2 :
-            model.ifThen(
-                model.allEqual(t[e][50], model.intVar(1)),
-                model.allEqual(t[e][68], model.intVar(1)) // lundi-mercredi-vendredi
-            );
-            // Si 2 jours, semaine 1 :
-            model.ifThen(
-                model.allEqual(t[e][49], model.intVar(2)),
-                model.allEqual(t[e][67], model.intVar(1)) // lundi-mercredi-vendredi
-            );
-            model.ifThen(
-                model.allEqual(t[e][49], model.intVar(2)),
-                model.allEqual(t[e][71], model.intVar(1)) // mardi-jeudi
-            );
-            // Si 2 jours, semaine 2 :
-            model.ifThen(
-                model.allEqual(t[e][50], model.intVar(2)),
-                model.allEqual(t[e][68], model.intVar(1)) // lundi-mercredi-vendredi
-            );
-            model.ifThen(
-                model.allEqual(t[e][50], model.intVar(2)),
-                model.allEqual(t[e][72], model.intVar(1)) // mardi-jeudi
-            );
+            // Semaine 1 : (n=t[e][49], lmv=t[e][67], mj=t[e][71])
+            model.arithm(t[e][67], "<=", t[e][49]).post();
+            model.arithm(t[e][67], "-", t[e][71], "<", 2).post();
+            model.arithm(t[e][71], "-", t[e][67], "<", 2).post();
+            model.arithm(t[e][67], "*", t[e][49], ">=", t[e][49]).post();
+            
+            // Semaine 2 : (n=t[e][50], lmv=t[e][68], mj=t[e][72])
+            model.arithm(t[e][68], "<=", t[e][50]).post();
+            model.arithm(t[e][68], "-", t[e][72], "<", 2).post();
+            model.arithm(t[e][72], "-", t[e][68], "<", 2).post();
+            model.arithm(t[e][68], "*", t[e][50], ">=", t[e][50]).post();
             
             
             // Contraintes des 7h et 11h : si on fait un 11h, on ne fait pas de 7h
+            // Première semaine : (nb7h=t[e][13], nb11h=t[e][15])
+            // Deuxième semaine : (nb7h=t[e][14], nb11h=t[e][16])
             model.ifThen( // première semaine
                 model.arithm(t[e][15], ">", 0), // s'il y a des 11h
                 model.allEqual(t[e][13], model.intVar(0)) // alors il n'y a pas de 7h
@@ -228,9 +211,9 @@ public class Main {
             j[10][0], j[10][1], j[10][2], j[10][3], j[10][4], j[10][5], j[10][6], j[10][7], j[10][8], j[10][9],
             j[11][0], j[11][1], j[11][2], j[11][3], j[11][4], j[11][5], j[11][6], j[11][7], j[11][8], j[11][9],
             j[12][0], j[12][1], j[12][2], j[12][3], j[12][4], j[12][5], j[12][6], j[12][7], j[12][8], j[12][9],
-            j[13][0], j[13][1], j[13][2]//, j[13][3], j[13][4], j[13][5], j[13][6], j[13][7], j[13][8], j[13][9],
-            //j[14][0], j[14][1], j[14][2], j[14][3], j[14][4], j[14][5], j[14][6], j[14][7], j[14][8], j[14][9],
-            //j[15][0], j[15][1], j[15][2], j[15][3], j[15][4], j[15][5], j[15][6], j[15][7], j[15][8], j[15][9]
+            j[13][0], j[13][1], j[13][2], j[13][3], j[13][4], j[13][5], j[13][6], j[13][7], j[13][8], j[13][9],
+            j[14][0], j[14][1], j[14][2], j[14][3], j[14][4], j[14][5], j[14][6], j[14][7], j[14][8], j[14][9],
+            j[15][0], j[15][1], j[15][2], j[15][3], j[15][4], j[15][5]//, j[15][6], j[15][7], j[15][8], j[15][9]
         ));
         
         i = 0;
