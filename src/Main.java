@@ -41,6 +41,7 @@ public class Main {
         model.allEqual(s[15], model.intVar(29)).post(); // MARIE, 7 + 2*11*/
         
         IntVar[][] j = model.intVarMatrix(16, 10, new int[]{0, 7, 10, 11}); // nombre d'heures de travail pour un jour
+        IntVar[][] h = model.intVarMatrix(16, 10, new int[]{0, 1, 2}); // heure de départ
         IntVar[][] t = model.intVarMatrix(16, 100, 0, 100, false); // variables secondaires
         int i, k, l, e;
                 
@@ -210,7 +211,24 @@ public class Main {
             j[12][0], j[12][1], j[12][2], j[12][3], j[12][4], j[12][5], j[12][6], j[12][7], j[12][8], j[12][9],
             j[13][0], j[13][1], j[13][2], j[13][3], j[13][4], j[13][5], j[13][6], j[13][7], j[13][8], j[13][9],
             j[14][0], j[14][1], j[14][2], j[14][3], j[14][4], j[14][5], j[14][6], j[14][7], j[14][8], j[14][9],
-            j[15][0], j[15][1], j[15][2], j[15][3], j[15][4], j[15][5], j[15][6], j[15][7], j[15][8], j[15][9]
+            j[15][0], j[15][1], j[15][2], j[15][3], j[15][4], j[15][5], j[15][6], j[15][7], j[15][8], j[15][9],
+            
+            h[0][0], h[0][1], h[0][2], h[0][3], h[0][4], h[0][5], h[0][6], h[0][7], h[0][8], h[0][9],
+            h[1][0], h[1][1], h[1][2], h[1][3], h[1][4], h[1][5], h[1][6], h[1][7], h[1][8], h[1][9],
+            h[2][0], h[2][1], h[2][2], h[2][3], h[2][4], h[2][5], h[2][6], h[2][7], h[2][8], h[2][9],
+            h[3][0], h[3][1], h[3][2], h[3][3], h[3][4], h[3][5], h[3][6], h[3][7], h[3][8], h[3][9],
+            h[4][0], h[4][1], h[4][2], h[4][3], h[4][4], h[4][5], h[4][6], h[4][7], h[4][8], h[4][9],
+            h[5][0], h[5][1], h[5][2], h[5][3], h[5][4], h[5][5], h[5][6], h[5][7], h[5][8], h[5][9],
+            h[6][0], h[6][1], h[6][2], h[6][3], h[6][4], h[6][5], h[6][6], h[6][7], h[6][8], h[6][9],
+            h[7][0], h[7][1], h[7][2], h[7][3], h[7][4], h[7][5], h[7][6], h[7][7], h[7][8], h[7][9],
+            h[8][0], h[8][1], h[8][2], h[8][3], h[8][4], h[8][5], h[8][6], h[8][7], h[8][8], h[8][9],
+            h[9][0], h[9][1], h[9][2], h[9][3], h[9][4], h[9][5], h[9][6], h[9][7], h[9][8], h[9][9],
+            h[10][0], h[10][1], h[10][2], h[10][3], h[10][4], h[10][5], h[10][6], h[10][7], h[10][8], h[10][9],
+            h[11][0], h[11][1], h[11][2], h[11][3], h[11][4], h[11][5], h[11][6], h[11][7], h[11][8], h[11][9],
+            h[12][0], h[12][1], h[12][2], h[12][3], h[12][4], h[12][5], h[12][6], h[12][7], h[12][8], h[12][9],
+            h[13][0], h[13][1], h[13][2], h[13][3], h[13][4], h[13][5], h[13][6], h[13][7], h[13][8], h[13][9],
+            h[14][0], h[14][1], h[14][2], h[14][3], h[14][4], h[14][5], h[14][6], h[14][7], h[14][8], h[14][9],
+            h[15][0], h[15][1], h[15][2], h[15][3], h[15][4], h[15][5], h[15][6], h[15][7], h[15][8], h[15][9]
         ));
         
         i = 0;
@@ -224,26 +242,26 @@ public class Main {
             for (k = 0; k < 16; k++) {
                 System.out.println(
                     eiades[k] +
-                    ", j1 = " + j[k][0].getValue() +
-                    ", j2 = " + j[k][1].getValue() +
-                    ", j3 = " + j[k][2].getValue() +
-                    ", j4 = " + j[k][3].getValue() +
-                    ", j5 = " + j[k][4].getValue() +
+                    ", j1 = " + j[k][0].getValue() + ", h1 = " + h[k][0].getValue() +
+                    ", j2 = " + j[k][1].getValue() + ", h2 = " + h[k][1].getValue() +
+                    ", j3 = " + j[k][2].getValue() + ", h3 = " + h[k][2].getValue() +
+                    ", j4 = " + j[k][3].getValue() + ", h4 = " + h[k][3].getValue() +
+                    ", j5 = " + j[k][4].getValue() + ", h5 = " + h[k][4].getValue() +
                     //", total s1 : " + t[k][5].getValue() +
                     //", nombre de 7h : " + t[k][13].getValue() +
                     //", nombre de 11h : " + t[k][15].getValue() +
-                    ", nombre de jours de repo : " + t[k][49].getValue() +
-                    ", j6 = " + j[k][5].getValue() +
-                    ", j7 = " + j[k][6].getValue() +
-                    ", j8 = " + j[k][7].getValue() +
-                    ", j9 = " + j[k][8].getValue() +
-                    ", j10 = " + j[k][9].getValue() +
+                    //", nombre de jours de repo : " + t[k][49].getValue() +
+                    ", j6 = " + j[k][5].getValue() + ", h6 = " + h[k][5].getValue() +
+                    ", j7 = " + j[k][6].getValue() + ", h7 = " + h[k][6].getValue() +
+                    ", j8 = " + j[k][7].getValue() + ", h8 = " + h[k][7].getValue() +
+                    ", j9 = " + j[k][8].getValue() + ", h9 = " + h[k][8].getValue() +
+                    ", j10 = " + j[k][9].getValue() + ", h10 = " + h[k][9].getValue() +
                     //", total s2 : " + t[k][11].getValue() +
                     //", total prévu : " + t[k][0].getValue() +
                     //", total : trouvé " + t[k][10].getValue() +
                     //", nombre de 7h : " + t[k][14].getValue() +
                     //", nombre de 11h : " + t[k][16].getValue() +
-                    ", nombre de jours de repo : " + t[k][50].getValue() +
+                    //", nombre de jours de repo : " + t[k][50].getValue() +
                     ", s = " + s[k].getValue());
             }
             System.out.println();
