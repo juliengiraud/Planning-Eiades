@@ -1,8 +1,6 @@
 import static org.chocosolver.solver.search.strategy.Search.*;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solver;
-import static org.chocosolver.solver.constraints.nary.cnf.LogOp.*;
-import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
 
 public class Main {
@@ -15,9 +13,9 @@ public class Main {
         Les heures possibles sont :
         6h45 -------- 13h45
         6h45 ------------------ 16h45
-        6h45 ------------------------ 17h45
+        6h45 ------------------------------ 17h45
              7h30 --------- 14h
-             7h30 ------------------------- 17h30
+             7h30 ------------------- 17h30
              7h30 ------------------------------- 18h30
                   12h --------------------------------- 19h
         */
@@ -162,35 +160,49 @@ public class Main {
             model.arithm(t[e][68], "*", t[e][50], ">=", t[e][50]).post();
             
             
-            // Contraintes des 7h et 11h : si on fait un 11h, on ne fait pas de 7h
-            
-            // Première semaine : (nb7h=t[e][13], nb11h=t[e][15])
-            model.arithm(t[e][13], "*", t[e][15], "=", 0).post();
-            
-            // Deuxième semaine : (nb7h=t[e][14], nb11h=t[e][16])
-            model.arithm(t[e][14], "*", t[e][16], "=", 0).post();
+            // Contraintes des 7h et 11h : si on fait un 11h, on ne fait pas de 7h SAUF POUR MARIE (e=15)
+            if (e != 15) {
+                // Première semaine : (nb7h=t[e][13], nb11h=t[e][15])
+                model.arithm(t[e][13], "*", t[e][15], "=", 0).post();
+
+                // Deuxième semaine : (nb7h=t[e][14], nb11h=t[e][16])
+                model.arithm(t[e][14], "*", t[e][16], "=", 0).post();
+            }
             
         }
+        
+        // Contraintes verticales
+        
+        // si on commence à 12h, on termine à 19h
+        for (e = 0; e < 16; e ++) {
+            for (i = 0; i < 10; i++) {
+                // h[e][i]=2 -> j[e][i]=7
+                model.ifThen(
+                    model.allEqual(h[e][i], model.intVar(2)),
+                    model.allEqual(j[e][i], model.intVar(7))
+                );
+            }
+        }
+        
         
         // Contraintes de chaque eiade
         for (i = 0; i < 10; i++) { // pour toutes les heures de travail
             model.arithm(j[0][i], "<", model.intVar(8)).post(); // B. MICHELIN, 3*7
-            // N. JEANJEAN, nb max de 11h : 10 (rien à faire)
             model.arithm(j[2][i], "<", model.intVar(11)).post(); // MP. CHAUTARD, nb max de 11h : 0
-            /*model.arithm(j[3][i], "", model.intVar()).post(); // C. JAMOIS, nb max de 11h : 1*/
-            // K. REYNAUD, nb max de 11h : 10 (rien à faire)
             model.arithm(j[5][i], "<", model.intVar(11)).post(); // E. KAID, nb max de 11h : 0
-            // P. CUIROT, nb max de 11h : 10 (rien à faire)
-            // R. BENZAIDE, nb max de 11h : 10 (rien à faire)
             model.arithm(j[8][i], "<", model.intVar(11)).post(); // V. LEGAT, nb max de 11h : 0
-            // Y. AUBERT BRUN, nb max de 11h : 10 (rien à faire)
             model.arithm(j[10][i], "<", model.intVar(11)).post(); // V. BANCALARI, nb max de 11h : 0
             model.arithm(j[11][i], "<", model.intVar(11)).post(); // D. SERMET, nb max de 11h : 0
             model.arithm(j[12][i], "<", model.intVar(11)).post(); // F. BOULAY, nb max de 11h : 0
-            // V. MARDIROSSIAN, nb max de 11h : 10 (rien à faire)
-            /*model.arithm(j[14][i], "", model.intVar()).post(); // BEA REIX, nb max de 11h : 1*/
-            /*model.arithm(j[15][i], "", model.intVar()).post(); // MARIE, 7 + 2*11*/
         }
+        model.arithm(t[3][15], "<=", 1).post(); // C. JAMOIS, nb max de 11h : 1 - Première semaine
+        model.arithm(t[3][16], "<=", 1).post(); // C. JAMOIS, nb max de 11h : 1 - Deuxième semaine
+        model.arithm(t[14][15], "<=", 1).post(); // BEA REIX, nb max de 11h : 1 - Première semaine
+        model.arithm(t[14][16], "<=", 1).post(); // BEA REIX, nb max de 11h : 1 - Deuxième semaine
+        model.allEqual(t[15][13], model.intVar(1)).post(); // MARIE, 7 + 2*11 : 7h - Première semaine
+        model.allEqual(t[15][14], model.intVar(1)).post(); // MARIE, 7 + 2*11 : 7h - Deuxième semaine
+        model.allEqual(t[15][15], model.intVar(2)).post(); // MARIE, 7 + 2*11 : 11h - Première semaine
+        model.allEqual(t[15][16], model.intVar(2)).post(); // MARIE, 7 + 2*11 : 11h - Deuxième semaine
         
 
         Solver solver = model.getSolver();
@@ -238,24 +250,27 @@ public class Main {
             "V. LEGAT", "Y. AUBERT BRUN", "V. BANCALARI", "D. SERMET",
             "F. BOULAY","V. MARDIROSSIAN","BEA REIX","MARIE"
         };
+        String[] horaires = {
+            "6h45", "7h30", "12h"
+        };
         while(solver.solve()) {
             for (k = 0; k < 16; k++) {
                 System.out.println(
                     eiades[k] +
-                    ", j1 = " + j[k][0].getValue() + ", h1 = " + h[k][0].getValue() +
-                    ", j2 = " + j[k][1].getValue() + ", h2 = " + h[k][1].getValue() +
-                    ", j3 = " + j[k][2].getValue() + ", h3 = " + h[k][2].getValue() +
-                    ", j4 = " + j[k][3].getValue() + ", h4 = " + h[k][3].getValue() +
-                    ", j5 = " + j[k][4].getValue() + ", h5 = " + h[k][4].getValue() +
+                    ", j1 = " + j[k][0].getValue() + " : " + horaires[h[k][0].getValue()] +
+                    ", j2 = " + j[k][1].getValue() + " : " + horaires[h[k][1].getValue()] +
+                    ", j3 = " + j[k][2].getValue() + " : " + horaires[h[k][2].getValue()] +
+                    ", j4 = " + j[k][3].getValue() + " : " + horaires[h[k][3].getValue()] +
+                    ", j5 = " + j[k][4].getValue() + " : " + horaires[h[k][4].getValue()] +
                     //", total s1 : " + t[k][5].getValue() +
                     //", nombre de 7h : " + t[k][13].getValue() +
                     //", nombre de 11h : " + t[k][15].getValue() +
                     //", nombre de jours de repo : " + t[k][49].getValue() +
-                    ", j6 = " + j[k][5].getValue() + ", h6 = " + h[k][5].getValue() +
-                    ", j7 = " + j[k][6].getValue() + ", h7 = " + h[k][6].getValue() +
-                    ", j8 = " + j[k][7].getValue() + ", h8 = " + h[k][7].getValue() +
-                    ", j9 = " + j[k][8].getValue() + ", h9 = " + h[k][8].getValue() +
-                    ", j10 = " + j[k][9].getValue() + ", h10 = " + h[k][9].getValue() +
+                    ", j6 = " + j[k][5].getValue() + " : " + horaires[h[k][5].getValue()] +
+                    ", j7 = " + j[k][6].getValue() + " : " + horaires[h[k][6].getValue()] +
+                    ", j8 = " + j[k][7].getValue() + " : " + horaires[h[k][7].getValue()] +
+                    ", j9 = " + j[k][8].getValue() + " : " + horaires[h[k][8].getValue()] +
+                    ", j10 = " + j[k][9].getValue() + " : " + horaires[h[k][9].getValue()] +
                     //", total s2 : " + t[k][11].getValue() +
                     //", total prévu : " + t[k][0].getValue() +
                     //", total : trouvé " + t[k][10].getValue() +
