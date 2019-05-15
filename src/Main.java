@@ -20,7 +20,7 @@ public class Main {
                   12h --------------------------------- 19h
         */
         
-        IntVar[] s = model.intVarArray(16, new int[]{20, 21, 25, 29, 28, 30, 33, 35, 36, 39});
+        IntVar[] s = model.intVarArray(16, new int[]{20, 21, 25, 28, 29, 30, 31, 33, 35, 36, 39});
         model.allEqual(s[0], model.intVar(21)).post(); // B. MICHELIN, 3*7
         model.allEqual(s[1], model.intVar(36)).post(); // N. JEANJEAN, nb max de 11h : 10 (rien à faire)
         model.allEqual(s[2], model.intVar(20)).post(); // MP. CHAUTARD, nb max de 11h : 0
@@ -36,7 +36,8 @@ public class Main {
         model.allEqual(s[12], model.intVar(30)).post(); // F. BOULAY, nb max de 11h : 0
         model.allEqual(s[13], model.intVar(35)).post(); // V. MARDIROSSIAN, nb max de 11h : 10 (rien à faire)
         model.allEqual(s[14], model.intVar(21)).post(); // BEA REIX, nb max de 11h : 1
-        model.allEqual(s[15], model.intVar(29)).post(); // MARIE, 7 + 2*11*/
+        model.arithm(s[15], ">=", 29).post(); // MARIE, 3 jours de suite hors mardi-mercredi-jeudi
+        model.arithm(s[15], "<=", 31).post(); // MARIE, 3 jours de suite hors mardi-mercredi-jeudi
         
         IntVar[][] j = model.intVarMatrix(16, 10, new int[]{0, 7, 10, 11}); // nombre d'heures de travail pour un jour
         IntVar[][] h = model.intVarMatrix(16, 10, new int[]{0, 1, 2}); // heure de départ
@@ -107,7 +108,7 @@ public class Main {
             
             
             // t[e][49] : nombre de jours de repo de la première semaine
-            t[e][51] = model.allEqual(j[e][0], model.intVar(0)).reify();
+            t[e][51] = model.allEqual(j[e][0], model.intVar(0)).reify(); // 1 si c'est un jours de repo, 0 sinon
             t[e][52] = model.allEqual(j[e][1], model.intVar(0)).reify();
             t[e][53] = model.allEqual(j[e][2], model.intVar(0)).reify();
             t[e][54] = model.allEqual(j[e][3], model.intVar(0)).reify();
@@ -124,8 +125,12 @@ public class Main {
             // t[e][71] : nombre de jours de repo sur mardi-jeudi de la première semaine
             model.arithm(t[e][52], "+", t[e][54], "=", t[e][71]).post();
             
+            // t[e][73] : nombre de jours de repo sur mardi-mercredi-jeudi de la première semaine
+            model.arithm(t[e][52], "+", t[e][53], "=", t[e][75]).post();
+            model.arithm(t[e][75], "+", t[e][54], "=", t[e][73]).post();
+            
             // t[e][50] : nombre de jour de repo de la deuxième semaine
-            t[e][59] = model.allEqual(j[e][5], model.intVar(0)).reify();
+            t[e][59] = model.allEqual(j[e][5], model.intVar(0)).reify(); // 1 si c'est un jours de repo, 0 sinon
             t[e][60] = model.allEqual(j[e][6], model.intVar(0)).reify();
             t[e][61] = model.allEqual(j[e][7], model.intVar(0)).reify();
             t[e][62] = model.allEqual(j[e][8], model.intVar(0)).reify();
@@ -141,6 +146,10 @@ public class Main {
             
             // t[e][72] nombre de jours de repo sur mardi-jeudi de la deuxième semaine
             model.arithm(t[e][60], "+", t[e][62], "=", t[e][72]).post();
+            
+            // t[e][74] : nombre de jours de repo sur mardi-mercredi-jeudi de la première semaine
+            model.arithm(t[e][60], "+", t[e][61], "=", t[e][76]).post();
+            model.arithm(t[e][76], "+", t[e][62], "=", t[e][74]).post();
 
             // Contraintes des jours de repo
             // Si 1 jour : soit lundi soit mercredi soit vendredi
@@ -199,15 +208,17 @@ public class Main {
         model.arithm(t[3][16], "<=", 1).post(); // C. JAMOIS, nb max de 11h : 1 - Deuxième semaine
         model.arithm(t[14][15], "<=", 1).post(); // BEA REIX, nb max de 11h : 1 - Première semaine
         model.arithm(t[14][16], "<=", 1).post(); // BEA REIX, nb max de 11h : 1 - Deuxième semaine
-        model.allEqual(t[15][13], model.intVar(1)).post(); // MARIE, 7 + 2*11 : 7h - Première semaine
-        model.allEqual(t[15][14], model.intVar(1)).post(); // MARIE, 7 + 2*11 : 7h - Deuxième semaine
-        model.allEqual(t[15][15], model.intVar(2)).post(); // MARIE, 7 + 2*11 : 11h - Première semaine
-        model.allEqual(t[15][16], model.intVar(2)).post(); // MARIE, 7 + 2*11 : 11h - Deuxième semaine
+        model.allEqual(t[15][49], t[15][50], model.intVar(2)).post(); // MARIE, 3 jours de travail chaque semaine
+        model.allEqual(t[15][51], t[15][52]).post(); // jours consécutifs : lundi-mardi - première semaine
+        model.allEqual(t[15][54], t[15][55]).post();// jours consécutifs : jeudi-vendredi - première semaine
+        model.allEqual(t[15][59], t[15][60]).post(); // jours consécutifs : lundi-mardi - deuxième semaine
+        model.allEqual(t[15][62], t[15][63]).post();// jours consécutifs : jeudi-vendredi - deuxième semaine
         
 
         Solver solver = model.getSolver();
         
-        solver.setSearch(intVarSearch(
+        solver.setSearch(intVarSearch(s[15],
+            
             j[0][0], j[0][1], j[0][2], j[0][3], j[0][4], j[0][5], j[0][6], j[0][7], j[0][8], j[0][9],
             j[1][0], j[1][1], j[1][2], j[1][3], j[1][4], j[1][5], j[1][6], j[1][7], j[1][8], j[1][9],
             j[2][0], j[2][1], j[2][2], j[2][3], j[2][4], j[2][5], j[2][6], j[2][7], j[2][8], j[2][9],
