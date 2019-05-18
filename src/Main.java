@@ -14,7 +14,6 @@ public class Main {
         6h45 -------- 13h45
         6h45 ------------------ 16h45
         6h45 ------------------------------ 17h45
-             7h30 --------- 14h
              7h30 ------------------- 17h30
              7h30 ------------------------------- 18h30
                   12h --------------------------------- 19h
@@ -41,7 +40,7 @@ public class Main {
         
         IntVar[][] j = model.intVarMatrix(16, 10, new int[]{0, 7, 10, 11}); // nombre d'heures de travail pour un jour
         IntVar[][] h = model.intVarMatrix(16, 10, new int[]{0, 1, 2}); // heure de départ
-        IntVar[][] t = model.intVarMatrix(16, 100, 0, 100, false); // variables secondaires
+        IntVar[][] t = model.intVarMatrix(17, 200, 0, 100, false); // variables secondaires
         int i, k, l, e;
                 
         for (e = 0; e < 16; e++) {
@@ -76,12 +75,27 @@ public class Main {
             t[e][25] = model.allEqual(j[e][5], model.intVar(7)).reify(); // nombre de 7h du 1er jour
             t[e][26] = model.allEqual(j[e][6], model.intVar(7)).reify(); // nombre de 7h du 2em jour
             t[e][27] = model.allEqual(j[e][7], model.intVar(7)).reify(); // nombre de 7h du 3em jour
-            t[e][28] = model.allEqual(j[e][8], model.intVar(7)).reify();// nombre de 7h du 4em jour
+            t[e][28] = model.allEqual(j[e][8], model.intVar(7)).reify(); // nombre de 7h du 4em jour
             t[e][29] = model.allEqual(j[e][9], model.intVar(7)).reify(); // nombre de 7h du 5em jour
             model.arithm(t[e][25], "+", t[e][26], "=", t[e][30]).post();
             model.arithm(t[e][30], "+", t[e][27], "=", t[e][31]).post();
             model.arithm(t[e][31], "+", t[e][28], "=", t[e][32]).post();
             model.arithm(t[e][32], "+", t[e][29], "=", t[e][14]).post();
+            
+            
+            // t[e][107] : 10h la première semaine
+            t[e][109] = model.allEqual(j[e][0], model.intVar(10)).reify(); // nombre de 10h du 1er jour
+            t[e][110] = model.allEqual(j[e][1], model.intVar(10)).reify(); // nombre de 10h du 2em jour
+            t[e][111] = model.allEqual(j[e][2], model.intVar(10)).reify(); // nombre de 10h du 3em jour
+            t[e][112] = model.allEqual(j[e][3], model.intVar(10)).reify(); // nombre de 10h du 4em jour
+            t[e][113] = model.allEqual(j[e][4], model.intVar(10)).reify(); // nombre de 10h du 5em jour
+            
+            // t[e][108] : 10h la deuxième semaine
+            t[e][114] = model.allEqual(j[e][5], model.intVar(10)).reify(); // nombre de 10h du 1er jour
+            t[e][115] = model.allEqual(j[e][6], model.intVar(10)).reify(); // nombre de 10h du 2em jour
+            t[e][116] = model.allEqual(j[e][7], model.intVar(10)).reify(); // nombre de 10h du 3em jour
+            t[e][117] = model.allEqual(j[e][8], model.intVar(10)).reify(); // nombre de 10h du 4em jour
+            t[e][118] = model.allEqual(j[e][9], model.intVar(10)).reify(); // nombre de 10h du 5em jour            
             
             
             // t[e][15] : nombre de 11h la première semaine
@@ -182,20 +196,63 @@ public class Main {
         
         // Contraintes verticales
         
-        // si on commence à 12h, on termine à 19h
-        for (e = 0; e < 16; e ++) {
-            for (i = 0; i < 10; i++) {
-                // h[e][i]=2 -> j[e][i]=7
-                model.ifThen(
+        for (e = 0; e < 16; e ++) { // pour chaque eiade
+            for (i = 0; i < 10; i++) { // pour chaque jour
+                IntVar h2 = model.intVar(0, 50);
+                IntVar h2j = model.intVar(0, 50);
+                model.arithm(h[e][i], "*", model.intVar(2), "=", h2).post();
+                model.arithm(h2, "+", j[e][i], "=", h2j).post();
+                // si on commence à 12h, on termine à 19h
+                // Si on commence à 7h30 on ne fait pas de 7h
+                model.allDifferent(
+                    h2j,
+                    //model.intVar(2),
+                    model.intVar(4),
+                    //model.intVar(9),
+                    model.intVar(14),
+                    model.intVar(15)
+                ).post();
+                /*model.ifThen( // h[e][i]=2 -> j[e][i]=7
                     model.allEqual(h[e][i], model.intVar(2)),
                     model.allEqual(j[e][i], model.intVar(7))
-                );
+                );*/
+                /*model.ifThen( // h[e][i]=1 -> j[e][i]>7
+                    model.allEqual(h[e][i], model.intVar(1)),
+                    model.arithm(j[e][i], ">", 7)
+                );*/
+                
+                // t[e][77+i] = 1 si h[e][i]=0 (commence à 6h45 le jour i) (de t[e][77] à t[e][86])
+                t[e][77+i] = model.allEqual(h[e][i], model.intVar(0)).reify();
+                
+                // t[e][88+i] = 1 si h[e][i]=1 (commence à 7h30 le jour i) (de t[e][87] à t[e][96])
+                t[e][87+i] = model.allEqual(h[e][i], model.intVar(1)).reify();
+                
+                // t[e][97+i] = 1 si h[e][i]=2 (commence à 12h le jour i) (de t[e][97] à t[e][106])
+                t[e][97+i] = model.allEqual(h[e][i], model.intVar(2)).reify();
+                
+                // t[e][119+i] = 1 si termine à 13h45 le jour i (de t[e][119] à t[e][128])
+                model.arithm(t[e][77+i], "*", t[e][(i<5?17:20)+i], "=", t[e][119+i]).reify();
+                
+                // t[e][129+i] = 1 si termine à 16h45 le jour i (de t[e][129] à t[e][138])
+                model.arithm(t[e][77+i], "*", t[e][109+i], "=", t[e][129+i]).reify();
+                
+                // t[e][139+i] = 1 si termine à 17h30 le jour i (de t[e][139] à t[e][148])
+                model.arithm(t[e][88+i], "*", t[e][109+i], "=", t[e][139+i]).reify();
+                
+                // t[e][149+i] = 1 si termine à 17h45 le jour i (de t[e][149] à t[e][158])
+                model.arithm(t[e][77+i], "*", t[e][(i<5?33:36)+i], "=", t[e][149+i]).reify();
+                
+                // t[e][159+i] = 1 si termine à 18h30 le jour i (de t[e][159] à t[e][168])
+                model.arithm(t[e][88+i], "*", t[e][(i<5?33:36)+i], "=", t[e][159+i]).reify();
+                
+                // t[e][97+i] = 1 si h[e][i]=2 (termine à 19h le jour i) (de t[e][97] à t[e][106])
             }
         }
         
         
-        // Contraintes de chaque eiade
-        for (i = 0; i < 10; i++) { // pour toutes les heures de travail
+        // Contraintes de chaque jour
+        for (i = 0; i < 10; i++) {
+            // contraintes personnelles des heures de travail
             model.arithm(j[0][i], "<", model.intVar(8)).post(); // B. MICHELIN, 3*7
             model.arithm(j[2][i], "<", model.intVar(11)).post(); // MP. CHAUTARD, nb max de 11h : 0
             model.arithm(j[5][i], "<", model.intVar(11)).post(); // E. KAID, nb max de 11h : 0
@@ -203,6 +260,84 @@ public class Main {
             model.arithm(j[10][i], "<", model.intVar(11)).post(); // V. BANCALARI, nb max de 11h : 0
             model.arithm(j[11][i], "<", model.intVar(11)).post(); // D. SERMET, nb max de 11h : 0
             model.arithm(j[12][i], "<", model.intVar(11)).post(); // F. BOULAY, nb max de 11h : 0
+            
+            // t[16][i] = nombre d'eiades qui commencent à 6h45 le jours i (de t[16][0] à t[16][9])
+            model.arithm(t[0][77+i], "+", t[1][77+i], "=", t[16][90]).post();
+            //for (k = 0; k < 14; k++) {model.arithm(t[16][90+k], "+", t[2+k][77+i], "=", t[16][91+k]).post();}
+            model.arithm(t[16][90], "+", t[2][77+i], "=", t[16][91]).post();
+            model.arithm(t[16][91], "+", t[3][77+i], "=", t[16][92]).post();
+            model.arithm(t[16][92], "+", t[4][77+i], "=", t[16][93]).post();
+            model.arithm(t[16][93], "+", t[5][77+i], "=", t[16][94]).post();
+            model.arithm(t[16][94], "+", t[6][77+i], "=", t[16][95]).post();
+            model.arithm(t[16][95], "+", t[7][77+i], "=", t[16][96]).post();
+            model.arithm(t[16][96], "+", t[8][77+i], "=", t[16][97]).post();
+            model.arithm(t[16][97], "+", t[9][77+i], "=", t[16][98]).post();
+            model.arithm(t[16][98], "+", t[10][77+i], "=", t[16][99]).post();
+            model.arithm(t[16][99], "+", t[11][77+i], "=", t[16][100]).post();
+            model.arithm(t[16][100], "+", t[12][77+i], "=", t[16][101]).post();
+            model.arithm(t[16][101], "+", t[13][77+i], "=", t[16][102]).post();
+            model.arithm(t[16][102], "+", t[14][77+i], "=", t[16][103]).post();
+            model.arithm(t[16][103], "+", t[15][77+i], "=", t[16][104]).post();
+            model.allEqual(t[16][104], t[16][i]).post();
+            
+            // t[16][10+i] = nombre d'eiades qui commencent à 7h30 le jours i (de t[16][10] à t[16][19])
+            model.arithm(t[0][87+i], "+", t[1][87+i], "=", t[16][105]).post();
+            //for (k = 0; k < 14; k++) {model.arithm(t[16][105+k], "+", t[2+k][87+i], "=", t[16][106+k]).post();}
+            model.arithm(t[16][105], "+", t[2][87+i], "=", t[16][106]).post();
+            model.arithm(t[16][106], "+", t[3][87+i], "=", t[16][107]).post();
+            model.arithm(t[16][107], "+", t[4][87+i], "=", t[16][108]).post();
+            model.arithm(t[16][108], "+", t[5][87+i], "=", t[16][109]).post();
+            model.arithm(t[16][109], "+", t[6][87+i], "=", t[16][110]).post();
+            model.arithm(t[16][110], "+", t[7][87+i], "=", t[16][111]).post();
+            model.arithm(t[16][111], "+", t[8][87+i], "=", t[16][112]).post();
+            model.arithm(t[16][112], "+", t[9][87+i], "=", t[16][113]).post();
+            model.arithm(t[16][113], "+", t[10][87+i], "=", t[16][114]).post();
+            model.arithm(t[16][114], "+", t[11][87+i], "=", t[16][115]).post();
+            model.arithm(t[16][115], "+", t[12][87+i], "=", t[16][116]).post();
+            model.arithm(t[16][116], "+", t[13][87+i], "=", t[16][117]).post();
+            model.arithm(t[16][117], "+", t[14][87+i], "=", t[16][118]).post();
+            model.arithm(t[16][118], "+", t[15][87+i], "=", t[16][119]).post();
+            model.allEqual(t[16][119], t[16][10+i]).post();
+            
+
+            // t[16][20+i] = nombre d'eiades qui commencent à 12h le jours i (de t[16][20] à t[16][29])
+            model.arithm(t[0][97+i], "+", t[1][97+i], "=", t[16][120]).post();
+            //for (k = 0; k < 14; k++) {model.arithm(t[16][120+k], "+", t[2+k][97+i], "=", t[16][121+k]).post();}
+            model.arithm(t[16][120], "+", t[2][97+i], "=", t[16][121]).post();
+            model.arithm(t[16][121], "+", t[3][97+i], "=", t[16][122]).post();
+            model.arithm(t[16][122], "+", t[4][97+i], "=", t[16][123]).post();
+            model.arithm(t[16][123], "+", t[5][97+i], "=", t[16][124]).post();
+            model.arithm(t[16][124], "+", t[6][97+i], "=", t[16][125]).post();
+            model.arithm(t[16][125], "+", t[7][97+i], "=", t[16][126]).post();
+            model.arithm(t[16][126], "+", t[8][97+i], "=", t[16][127]).post();
+            model.arithm(t[16][127], "+", t[9][97+i], "=", t[16][128]).post();
+            model.arithm(t[16][128], "+", t[10][97+i], "=", t[16][129]).post();
+            model.arithm(t[16][129], "+", t[11][97+i], "=", t[16][130]).post();
+            model.arithm(t[16][130], "+", t[12][97+i], "=", t[16][131]).post();
+            model.arithm(t[16][131], "+", t[13][97+i], "=", t[16][132]).post();
+            model.arithm(t[16][132], "+", t[14][97+i], "=", t[16][133]).post();
+            model.arithm(t[16][133], "+", t[15][97+i], "=", t[16][134]).post();
+            model.allEqual(t[16][134], t[16][20+i]).post();
+            
+            
+            // t[16][30+i] = nombre d'eiades qui terminent à 13h45 le jours i (de t[16][30] à t[16][39])
+            
+            
+            // t[16][40+i] = nombre d'eiades qui terminent à 16h45 le jours i (de t[16][40] à t[16][49])
+            
+            
+            // t[16][50+i] = nombre d'eiades qui terminent à 17h30 le jours i (de t[16][50] à t[16][59])
+            
+            
+            // t[16][60+i] = nombre d'eiades qui terminent à 17h45 le jours i (de t[16][60] à t[16][69])
+            
+            
+            // t[16][70+i] = nombre d'eiades qui terminent à 18h30 le jours i (de t[16][70] à t[16][79])
+            
+            
+            // t[16][80+i] = nombre d'eiades qui terminent à 19h le jours i (de t[16][80] à t[16][89])
+            
+            
         }
         model.arithm(t[3][15], "<=", 1).post(); // C. JAMOIS, nb max de 11h : 1 - Première semaine
         model.arithm(t[3][16], "<=", 1).post(); // C. JAMOIS, nb max de 11h : 1 - Deuxième semaine
@@ -265,6 +400,7 @@ public class Main {
             "6h45", "7h30", "12h"
         };
         while(solver.solve()) {
+            System.out.println("nb=" + t[16][0].getValue());
             for (k = 0; k < 16; k++) {
                 System.out.println(
                     eiades[k] +

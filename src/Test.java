@@ -15,13 +15,22 @@ public class Test {
         Model model = new Model();
         
         
-        IntVar n = model.intVar(0, 3);
-        IntVar n1 = model.intVar(0, 10);
-        IntVar n2 = model.intVar(0, 10);
-        IntVar n3 = model.intVar(0, 10);
-        IntVar[] test = {n1, n2, n3};
+        IntVar h = model.intVar(0, 2);
+        IntVar j = model.intVar(new int[]{0, 7, 10, 11});
+        IntVar h2 = model.intVar(0, 100);
+        IntVar h2j = model.intVar(0, 100);
+        IntVar[] test = {h, j};
         
-        model.count(9, test, model.intVar(4)).post();
+        model.arithm(h, "*", model.intVar(2), "=", h2).post();
+        model.arithm(h2, "+", j, "=", h2j).post();
+        model.allDifferent(
+            h2j,
+            model.intVar(2),
+            model.intVar(4),
+            model.intVar(9),
+            model.intVar(14),
+            model.intVar(15)
+        ).post();
         
         int i = 0, k, l, e;
         
@@ -31,9 +40,8 @@ public class Test {
         
         while(solver.solve()) {
             System.out.println(
-                "n1 = " + n1.getValue() +
-                ", n2 = " + n2.getValue() +
-                ", n3 = " + n1.getValue()
+                "h = " + h.getValue() +
+                ", j = " + j.getValue()
             );
             i++;
         }
