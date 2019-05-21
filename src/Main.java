@@ -143,25 +143,25 @@ public class Main {
             model.arithm(somme1[e][13], "+", t2[e][104], "=", somme1[e][14]).post();
             // somme1[e][14] = somme des heures de la 1er semaine
             
-            model.arithm(somme1[e][14], "+", t2[e][84], "=", somme1[e][15]).post();
-            model.arithm(somme1[e][15], "+", t2[e][94], "=", somme1[e][16]).post();
-            model.arithm(somme1[e][16], "+", t2[e][104], "=", somme1[e][17]).post();
+            model.arithm(somme1[e][14], "+", t2[e][85], "=", somme1[e][15]).post();
+            model.arithm(somme1[e][15], "+", t2[e][95], "=", somme1[e][16]).post();
+            model.arithm(somme1[e][16], "+", t2[e][105], "=", somme1[e][17]).post();
             
-            model.arithm(somme1[e][17], "+", t2[e][84], "=", somme1[e][18]).post();
-            model.arithm(somme1[e][18], "+", t2[e][94], "=", somme1[e][19]).post();
-            model.arithm(somme1[e][19], "+", t2[e][104], "=", somme1[e][20]).post();
+            model.arithm(somme1[e][17], "+", t2[e][86], "=", somme1[e][18]).post();
+            model.arithm(somme1[e][18], "+", t2[e][96], "=", somme1[e][19]).post();
+            model.arithm(somme1[e][19], "+", t2[e][106], "=", somme1[e][20]).post();
             
-            model.arithm(somme1[e][20], "+", t2[e][84], "=", somme1[e][21]).post();
-            model.arithm(somme1[e][21], "+", t2[e][94], "=", somme1[e][22]).post();
-            model.arithm(somme1[e][22], "+", t2[e][104], "=", somme1[e][23]).post();
+            model.arithm(somme1[e][20], "+", t2[e][87], "=", somme1[e][21]).post();
+            model.arithm(somme1[e][21], "+", t2[e][97], "=", somme1[e][22]).post();
+            model.arithm(somme1[e][22], "+", t2[e][107], "=", somme1[e][23]).post();
             
-            model.arithm(somme1[e][23], "+", t2[e][84], "=", somme1[e][24]).post();
-            model.arithm(somme1[e][24], "+", t2[e][94], "=", somme1[e][25]).post();
-            model.arithm(somme1[e][25], "+", t2[e][104], "=", somme1[e][26]).post();
+            model.arithm(somme1[e][23], "+", t2[e][88], "=", somme1[e][24]).post();
+            model.arithm(somme1[e][24], "+", t2[e][98], "=", somme1[e][25]).post();
+            model.arithm(somme1[e][25], "+", t2[e][108], "=", somme1[e][26]).post();
             
-            model.arithm(somme1[e][26], "+", t2[e][84], "=", somme1[e][27]).post();
-            model.arithm(somme1[e][27], "+", t2[e][94], "=", somme1[e][28]).post();
-            model.arithm(somme1[e][28], "+", t2[e][104], "=", somme1[e][29]).post();
+            model.arithm(somme1[e][26], "+", t2[e][89], "=", somme1[e][27]).post();
+            model.arithm(somme1[e][27], "+", t2[e][99], "=", somme1[e][28]).post();
+            model.arithm(somme1[e][28], "+", t2[e][109], "=", somme1[e][29]).post();
             // somme1[e][29] = somme des heures des 2 semaines
             
             model.arithm(somme1[e][29], "-", somme1[e][14], "=", somme1[e][30]).post();
