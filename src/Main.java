@@ -180,8 +180,8 @@ public class Main {
             
             // d'une semaine à l'autre on peut varier d'un jour de travail (- de 20h)
             // Initialisation de la variation d'heures d'une semaine à l'autre
-            model.arithm(variateurSemaine[e], ">=", model.intOffsetView(s[e], -9)).post();
-            model.arithm(variateurSemaine[e], "<=", model.intOffsetView(s[e], +9)).post();
+            model.arithm(variateurSemaine[e], ">=", model.intOffsetView(s[e], -0)).post();
+            model.arithm(variateurSemaine[e], "<=", model.intOffsetView(s[e], +0)).post();
             // Ajout de la variation : temps de travail de la première semaine = temps voulu +- x
             model.allEqual(somme1[e][14], variateurSemaine[e]).post(); // 1er semaine = s[e] +- 9h
             model.allEqual(somme1[e][29], t[e][0]).post(); // Somme des 2 semaines = 2 * s[e]
@@ -455,7 +455,7 @@ public class Main {
         
         solver.setSearch(intVarSearch(s[15], // pour les heures de Marie
                 
-            cr[0][0], cr[0][1], cr[0][2], cr[0][3], cr[0][4], cr[0][5], cr[0][6], cr[0][7], cr[0][8], cr[0][9],
+            cr[0][0], cr[0][1], cr[0][2], cr[0][3], cr[0][4], cr[0][5], cr[0][6], cr[0][7], cr[0][8], cr[0][9]/*,
             cr[1][0], cr[1][1], cr[1][2], cr[1][3], cr[1][4], cr[1][5], cr[1][6], cr[1][7], cr[1][8], cr[1][9],
             cr[2][0], cr[2][1], cr[2][2], cr[2][3], cr[2][4], cr[2][5], cr[2][6], cr[2][7], cr[2][8], cr[2][9],
             cr[3][0], cr[3][1], cr[3][2], cr[3][3], cr[3][4], cr[3][5], cr[3][6], cr[3][7], cr[3][8], cr[3][9],
@@ -470,7 +470,7 @@ public class Main {
             cr[12][0], cr[12][1], cr[12][2], cr[12][3], cr[12][4], cr[12][5], cr[12][6], cr[12][7], cr[12][8], cr[12][9],
             cr[13][0], cr[13][1], cr[13][2], cr[13][3], cr[13][4], cr[13][5], cr[13][6], cr[13][7], cr[13][8], cr[13][9],
             cr[14][0], cr[14][1], cr[14][2], cr[14][3], cr[14][4], cr[14][5], cr[14][6], cr[14][7], cr[14][8], cr[14][9],
-            cr[15][0], cr[15][1], cr[15][2], cr[15][3], cr[15][4], cr[15][5], cr[15][6], cr[15][7], cr[15][8], cr[15][9]
+            cr[15][0], cr[15][1], cr[15][2], cr[15][3], cr[15][4], cr[15][5], cr[15][6], cr[15][7], cr[15][8], cr[15][9]*/
             
         ));
         
