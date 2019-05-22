@@ -1,85 +1,128 @@
 import static org.chocosolver.solver.search.strategy.Search.*;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solver;
+import org.chocosolver.solver.objective.OptimizationPolicy;
 import org.chocosolver.solver.variables.IntVar;
 
 public class Main {
     
+    private static Model model;
+    private static IntVar[][] j, h, cr, t, t2;
+    private static IntVar[] s, variateurSemaine, somme2semaines, sommeJoursRepo1erSemaine, joursRepo1erSemaine,
+        joursRepo2emSemaine, variateurJoursRepo, somme1;
+    private static IntVar zero;
+    
+    private static void addConstraintOnSommeHeures1erSemaine(String op, int v) {
+        for (int e = 0; e < 16; e++) {
+            model.sum(new IntVar[]{
+                t2[e][80], t2[e][90], t2[e][100],
+                t2[e][81], t2[e][91], t2[e][101],
+                t2[e][82], t2[e][92], t2[e][102],
+                t2[e][83], t2[e][93], t2[e][103],
+                t2[e][84], t2[e][94], t2[e][104]
+            }, op, v).post();
+        }
+    }
+
+    private static void addConstraintOnSommeHeures1erSemaine(String op, IntVar[] v) {
+        for (int e = 0; e < 16; e++) {
+            model.sum(new IntVar[]{
+                t2[e][80], t2[e][90], t2[e][100],
+                t2[e][81], t2[e][91], t2[e][101],
+                t2[e][82], t2[e][92], t2[e][102],
+                t2[e][83], t2[e][93], t2[e][103],
+                t2[e][84], t2[e][94], t2[e][104]
+            }, op, v[e]).post();
+        }
+    }
+    
+    private static void addConstraintOnSommeHeures2emSemaine(String op, int v) {
+        for (int e = 0; e < 16; e++) {
+            model.sum(new IntVar[]{
+                t2[e][85], t2[e][95], t2[e][105],
+                t2[e][86], t2[e][96], t2[e][106],
+                t2[e][87], t2[e][97], t2[e][107],
+                t2[e][88], t2[e][98], t2[e][108],
+                t2[e][89], t2[e][99], t2[e][109]
+            }, op, v).post();
+        }
+    }
+    
+    private static void addConstraintOnSommeHeures1erEt2emSemaine(String op, IntVar[] v) {
+        for (int e = 0; e < 16; e++) {
+            model.sum(new IntVar[]{
+                t2[e][80], t2[e][90], t2[e][100],
+                t2[e][81], t2[e][91], t2[e][101],
+                t2[e][82], t2[e][92], t2[e][102],
+                t2[e][83], t2[e][93], t2[e][103],
+                t2[e][84], t2[e][94], t2[e][104],
+                t2[e][85], t2[e][95], t2[e][105],
+                t2[e][86], t2[e][96], t2[e][106],
+                t2[e][87], t2[e][97], t2[e][107],
+                t2[e][88], t2[e][98], t2[e][108],
+                t2[e][89], t2[e][99], t2[e][109]
+            }, op, v[e]).post();
+        }
+    }
+    
+    private static void addConstraintOnSommeJoursRepo1erSemaine(String op, IntVar[] v) {
+        for (int e = 0; e < 16; e++) {
+            model.sum(new IntVar[]{
+                t2[e][0], t2[e][1], t2[e][2], t2[e][3], t2[e][4]
+            }, op, v[e]).post();
+        }
+    }
+    
+    private static void addConstraintOnSommeJoursRepo2emSemaine(String op, IntVar[] v) {
+        for (int e = 0; e < 16; e++) {
+            model.sum(new IntVar[]{
+                t2[e][5], t2[e][6], t2[e][7], t2[e][8], t2[e][9]
+            }, op, v[e]).post();
+        }
+    }
+    
     public static void main(String[] args) {
         
-        Model model = new Model();
+        model = new Model();
+                
+        s = model.intVarArray(16, new int[]{20, 21, 25, 28, 29, 30, 31, 33, 35, 36, 39});
+        s[0] = model.intVar(21); // B. MICHELIN, un seul 11h
+        s[1] = model.intVar(36); // N. JEANJEAN
+        s[2] = model.intVar(20); // MP. CHAUTARD, un seul 11h
+        s[3] = model.intVar(30); // C. JAMOIS, un seul 11h
+        s[4] = model.intVar(33); // K. REYNAUD
+        s[5] = model.intVar(28); // E. KAID, un seul 11h
+        s[6] = model.intVar(39); // P. CUIROT
+        s[7] = model.intVar(30); // R. BENZAIDE
+        s[8] = model.intVar(39); // V. LEGAT, un seul 11h
+        s[9] = model.intVar(21); // Y. AUBERT BRUN
+        s[10] = model.intVar(25); // V. BANCALARI, un seul 11h
+        s[11] = model.intVar(30); // D. SERMET, un seul 11h
+        s[12] = model.intVar(30); // F. BOULAY, un seul 11h
+        s[13] = model.intVar(35); // V. MARDIROSSIAN
+        s[14] = model.intVar(21); // BEA REIX, un seul 11h
+        s[15] = model.intVar(29, 31); // MARIE, 3 jours de suite hors mardi-mercredi-jeudi
         
-        /*
-        Les heures possibles sont :
-        6h45 ------------------ 16h45
-        6h45 ------------------------------ 17h45
-             7h30 ------------------- 17h30
-             7h30 ------------------------------- 18h30
-                  12h --------------------------------- 19h
-        */
+        j = model.intVarMatrix(16, 10, new int[]{0, 7, 10, 11}); // nombre d'heures de travail pour un jour
+        h = model.intVarMatrix(16, 10, new int[]{0, 1, 2}); // heure de départ
+        cr = model.intVarMatrix(16, 10, new int[]{0, 1, 2, 3, 4}); // crénaux possibles
         
-        IntVar[] s = model.intVarArray(16, new int[]{20, 21, 25, 28, 29, 30, 31, 33, 35, 36, 39});
-        model.allEqual(s[0], model.intVar(21)).post(); // B. MICHELIN, un seul 11h
-        model.allEqual(s[1], model.intVar(36)).post(); // N. JEANJEAN
-        model.allEqual(s[2], model.intVar(20)).post(); // MP. CHAUTARD, un seul 11h
-        model.allEqual(s[3], model.intVar(30)).post(); // C. JAMOIS, un seul 11h
-        model.allEqual(s[4], model.intVar(33)).post(); // K. REYNAUD
-        model.allEqual(s[5], model.intVar(28)).post(); // E. KAID, un seul 11h
-        model.allEqual(s[6], model.intVar(39)).post(); // P. CUIROT
-        model.allEqual(s[7], model.intVar(30)).post(); // R. BENZAIDE
-        model.allEqual(s[8], model.intVar(39)).post(); // V. LEGAT, un seul 11h
-        model.allEqual(s[9], model.intVar(21)).post(); // Y. AUBERT BRUN
-        model.allEqual(s[10], model.intVar(25)).post(); // V. BANCALARI, un seul 11h
-        model.allEqual(s[11], model.intVar(30)).post(); // D. SERMET, un seul 11h
-        model.allEqual(s[12], model.intVar(30)).post(); // F. BOULAY, un seul 11h
-        model.allEqual(s[13], model.intVar(35)).post(); // V. MARDIROSSIAN
-        model.allEqual(s[14], model.intVar(21)).post(); // BEA REIX, un seul 11h
-        model.arithm(s[15], ">=", 29).post(); // MARIE, 3 jours de suite hors mardi-mercredi-jeudi
-        model.arithm(s[15], "<=", 31).post(); // MARIE, 3 jours de suite hors mardi-mercredi-jeudi
+        variateurSemaine = model.intVarArray(16, 0, 100);
+        variateurJoursRepo = model.intVarArray("objective", 16, 0, 1);
+        joursRepo1erSemaine = model.intVarArray(16, 0, 10);
+        joursRepo2emSemaine = model.intVarArray(16, 0, 10);
+        somme2semaines = model.intVarArray(16, 0, 100);
         
-        IntVar[][] j = model.intVarMatrix(16, 10, new int[]{0, 7, 10, 11}); // nombre d'heures de travail pour un jour
-        IntVar[][] h = model.intVarMatrix(16, 10, new int[]{0, 1, 2}); // heure de départ
-        IntVar[][] cr = model.intVarMatrix(16, 10, new int[]{0, 1, 2, 3, 4}); // crénaux possibles
-        
-        IntVar[] variateurSemaine = model.intVarArray(16, 0, 100);
-        
-        IntVar[][] t = model.intVarMatrix(17, 200, 0, 100, false); // variables secondaires
-        IntVar[][] t2 = model.intVarMatrix(17, 200, 0, 100, false); // variables secondaires
-        IntVar[][] somme1 = model.intVarMatrix(17, 200, 0, 100, false); // variables secondaires
-        IntVar zero = model.intVar(0);
-        int i, k, l, e;
-        
+        t = model.intVarMatrix(17, 200, 0, 100, false); // variables secondaires
+        t2 = model.intVarMatrix(17, 200, 0, 100, false); // variables secondaires
+        somme1 = model.intVarArray(16, 0, 100, false); // variables secondaires
+        zero = model.intVar(0);
+        int i, k, l, e;        
                 
         for (e = 0; e < 16; e++) {
             
             for (i = 0; i < 10; i++) {
-                // Remplissage de j et h
-                // j
-                /*model.ifThen(
-                    model.allEqual(cr[e][i], model.intVar(0)),
-                    model.allEqual(j[e][i], model.intVar(0))
-                );
-                model.ifThen(
-                    model.allEqual(cr[e][i], model.intVar(1)),
-                    model.allEqual(j[e][i], model.intVar(10))
-                );
-                model.ifThen(
-                    model.allEqual(cr[e][i], model.intVar(2)),
-                    model.allEqual(j[e][i], model.intVar(11))      
-                );
-                model.ifThen(
-                    model.allEqual(cr[e][i], model.intVar(3)),
-                    model.allEqual(j[e][i], model.intVar(10))
-                );
-                model.ifThen(
-                    model.allEqual(cr[e][i], model.intVar(4)),
-                    model.allEqual(j[e][i], model.intVar(11))
-                );
-                model.ifThen(
-                    model.allEqual(cr[e][i], model.intVar(5)),
-                    model.allEqual(j[e][i], model.intVar(7))
-                );*/
-                
+                                
                 // Jours de repos (de t2[e][0] à t2[e][9])
                 t2[e][i] = model.allEqual(cr[e][i], model.intVar(0)).reify(); // 1 si jour de repo
                 
@@ -120,72 +163,27 @@ public class Main {
             }
             
             
-            // Création des sommes
-            // somme1 = somme des heures des semaines
-            model.arithm(        zero, "+", t2[e][80], "=", somme1[e][0]).post();
-            model.arithm(somme1[e][0], "+", t2[e][90], "=", somme1[e][1]).post();
-            model.arithm(somme1[e][1], "+", t2[e][100], "=", somme1[e][2]).post();
-            
-            model.arithm(somme1[e][2], "+", t2[e][81], "=", somme1[e][3]).post();
-            model.arithm(somme1[e][3], "+", t2[e][91], "=", somme1[e][4]).post();
-            model.arithm(somme1[e][4], "+", t2[e][101], "=", somme1[e][5]).post();
-            
-            model.arithm(somme1[e][5], "+", t2[e][82], "=", somme1[e][6]).post();
-            model.arithm(somme1[e][6], "+", t2[e][92], "=", somme1[e][7]).post();
-            model.arithm(somme1[e][7], "+", t2[e][102], "=", somme1[e][8]).post();
-            
-            model.arithm(somme1[e][8], "+", t2[e][83], "=", somme1[e][9]).post();
-            model.arithm(somme1[e][9], "+", t2[e][93], "=", somme1[e][10]).post();
-            model.arithm(somme1[e][10], "+", t2[e][103], "=", somme1[e][11]).post();
-            
-            model.arithm(somme1[e][11], "+", t2[e][84], "=", somme1[e][12]).post();
-            model.arithm(somme1[e][12], "+", t2[e][94], "=", somme1[e][13]).post();
-            model.arithm(somme1[e][13], "+", t2[e][104], "=", somme1[e][14]).post();
-            // somme1[e][14] = somme des heures de la 1er semaine
-            
-            model.arithm(somme1[e][14], "+", t2[e][85], "=", somme1[e][15]).post();
-            model.arithm(somme1[e][15], "+", t2[e][95], "=", somme1[e][16]).post();
-            model.arithm(somme1[e][16], "+", t2[e][105], "=", somme1[e][17]).post();
-            
-            model.arithm(somme1[e][17], "+", t2[e][86], "=", somme1[e][18]).post();
-            model.arithm(somme1[e][18], "+", t2[e][96], "=", somme1[e][19]).post();
-            model.arithm(somme1[e][19], "+", t2[e][106], "=", somme1[e][20]).post();
-            
-            model.arithm(somme1[e][20], "+", t2[e][87], "=", somme1[e][21]).post();
-            model.arithm(somme1[e][21], "+", t2[e][97], "=", somme1[e][22]).post();
-            model.arithm(somme1[e][22], "+", t2[e][107], "=", somme1[e][23]).post();
-            
-            model.arithm(somme1[e][23], "+", t2[e][88], "=", somme1[e][24]).post();
-            model.arithm(somme1[e][24], "+", t2[e][98], "=", somme1[e][25]).post();
-            model.arithm(somme1[e][25], "+", t2[e][108], "=", somme1[e][26]).post();
-            
-            model.arithm(somme1[e][26], "+", t2[e][89], "=", somme1[e][27]).post();
-            model.arithm(somme1[e][27], "+", t2[e][99], "=", somme1[e][28]).post();
-            model.arithm(somme1[e][28], "+", t2[e][109], "=", somme1[e][29]).post();
-            // somme1[e][29] = somme des heures des 2 semaines
-            
-            model.arithm(somme1[e][29], "-", somme1[e][14], "=", somme1[e][30]).post();
-            // somme1[e][30] = somme des heures de la 2em semaine
-            
-        
-            
-            
             
             
             // Ajout des contraintes de temps sur une semaine
-            model.arithm(s[e], "*", model.intVar(2), "=", t[e][0]).post(); // t[e][0] contient les heures à faire en 2 semaines
+            model.arithm(s[e], "*", model.intVar(2), "=", somme2semaines[e]).post(); // t[e][0] contient les heures à faire en 2 semaines
             
-            model.arithm(somme1[e][14], "<=", 40).post(); // max 40h / semaine : semaine 1
-            model.arithm(somme1[e][30], "<=", 40).post(); // max 40h / semaine : semaine 2
+            addConstraintOnSommeHeures1erSemaine("<=", 40); // max 40h / semaine : semaine 1
+            addConstraintOnSommeHeures2emSemaine("<=", 40); // max 40h / semaine : semaine 2
             
-            // d'une semaine à l'autre on peut varier d'un jour de travail (- de 20h)
-            // Initialisation de la variation d'heures d'une semaine à l'autre
-            model.arithm(variateurSemaine[e], ">=", model.intOffsetView(s[e], -0)).post();
-            model.arithm(variateurSemaine[e], "<=", model.intOffsetView(s[e], +0)).post();
+            // d'une semaine à l'autre on peut varier d'un jour de travail
             // Ajout de la variation : temps de travail de la première semaine = temps voulu +- x
-            model.allEqual(somme1[e][14], variateurSemaine[e]).post(); // 1er semaine = s[e] +- 9h
-            model.allEqual(somme1[e][29], t[e][0]).post(); // Somme des 2 semaines = 2 * s[e]
+            // nbjourrepo1ersemaine = nbjourrepo2emsemaine +-variateur :
+            // nbjourrepo1ersemaine >= nbjourrepo2emsemaine - variateur
+            // nbjourrepo1ersemaine <= nbjourrepo2emsemaine + variateur
+            addConstraintOnSommeJoursRepo1erSemaine("=", joursRepo1erSemaine); // recup des jours de repo
+            addConstraintOnSommeJoursRepo2emSemaine("=", joursRepo2emSemaine); // recup des jours de repo
+            model.arithm(joursRepo1erSemaine[e], "+", variateurJoursRepo[e], ">=", joursRepo2emSemaine[e]).post();
+            model.arithm(joursRepo1erSemaine[e], "-", variateurJoursRepo[e], "<=", joursRepo2emSemaine[e]).post();
             
+            addConstraintOnSommeHeures1erEt2emSemaine("=", somme2semaines); // Somme des 2 semaines = 2 * s[e]*/
+            
+            //addConstraintOnSommeHeures1erEt2emSemaine("=", somme1);
             
             /*// t[e][107] : 10h la première semaine
             t[e][109] = model.allEqual(j[e][0], model.intVar(10)).reify(); // nombre de 10h du 1er jour
@@ -452,6 +450,22 @@ public class Main {
         }
 
         Solver solver = model.getSolver();
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[0]);
+        /*model.setObjective(Model.MINIMIZE, variateurJoursRepo[1]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[2]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[3]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[4]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[5]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[6]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[7]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[8]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[9]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[10]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[11]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[12]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[13]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[14]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[15]);*/
         
         solver.setSearch(intVarSearch(s[15], // pour les heures de Marie
                 
@@ -512,8 +526,9 @@ public class Main {
                     //", nombre de 7h : " + t[e][13].getValue()
                     //", nombre de 11h : " + t[e][15].getValue()
                     //", nombre de jours de repo : " + t[e][49].getValue()
-                    //", total : trouvé " + t[e][10].getValue()
-                    if (i == 4 || i == 9) System.out.print(", total s" + i/4 + " : " + somme1[e][i==4?14:30].getValue());
+                    //if (i == 9) System.out.print(", total : trouvé " + somme1[e].getValue());
+                    if (i == 9) System.out.print(", variateur : " + variateurJoursRepo[e].getValue());
+                    //if (i == 4 || i == 9) System.out.print(", total s" + i/4 + " : " + somme1[e][i==4?14:30].getValue());
                     if (i == 9) System.out.println(", s = " + s[e].getValue());
                 }
             }
