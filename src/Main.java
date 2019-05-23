@@ -81,6 +81,52 @@ public class Main {
         }
     }
     
+    private static void addConstraintOnSommeCommenceA6h1erSemaine(String op, int v) {
+        for (int i = 0; i < 5; i++) {
+            model.sum(new IntVar[]{
+                t2[0][20+i], t2[0][50+i],
+                t2[1][20+i], t2[1][50+i],
+                t2[2][20+i], t2[2][50+i],
+                t2[3][20+i], t2[3][50+i],
+                t2[4][20+i], t2[4][50+i],
+                t2[5][20+i], t2[5][50+i],
+                t2[6][20+i], t2[6][50+i],
+                t2[7][20+i], t2[7][50+i],
+                t2[8][20+i], t2[8][50+i],
+                t2[9][20+i], t2[9][50+i],
+                t2[10][20+i], t2[10][50+i],
+                t2[11][20+i], t2[11][50+i],
+                t2[12][20+i], t2[12][50+i],
+                t2[13][20+i], t2[13][50+i],
+                t2[14][20+i], t2[14][50+i],
+                t2[15][20+i], t2[15][50+i]
+            }, op, v).post();
+        }
+    }
+    
+    private static void addConstraintOnSommeCommenceA6h2emSemaine(String op, int v) {
+        for (int i = 5; i < 10; i++) {
+            model.sum(new IntVar[]{
+                t2[0][20+i], t2[0][50+i],
+                t2[1][20+i], t2[1][50+i],
+                t2[2][20+i], t2[2][50+i],
+                t2[3][20+i], t2[3][50+i],
+                t2[4][20+i], t2[4][50+i],
+                t2[5][20+i], t2[5][50+i],
+                t2[6][20+i], t2[6][50+i],
+                t2[7][20+i], t2[7][50+i],
+                t2[8][20+i], t2[8][50+i],
+                t2[9][20+i], t2[9][50+i],
+                t2[10][20+i], t2[10][50+i],
+                t2[11][20+i], t2[11][50+i],
+                t2[12][20+i], t2[12][50+i],
+                t2[13][20+i], t2[13][50+i],
+                t2[14][20+i], t2[14][50+i],
+                t2[15][20+i], t2[15][50+i]
+            }, op, v).post();
+        }
+    }
+    
     public static void main(String[] args) {
         
         model = new Model();
@@ -105,10 +151,10 @@ public class Main {
         
         j = model.intVarMatrix(16, 10, new int[]{0, 7, 10, 11}); // nombre d'heures de travail pour un jour
         h = model.intVarMatrix(16, 10, new int[]{0, 1, 2}); // heure de départ
-        cr = model.intVarMatrix(16, 10, new int[]{0, 1, 2, 3, 4}); // crénaux possibles
+        cr = model.intVarMatrix(16, 10, new int[]{0, 1, 2, 3, 4, 5}); // crénaux possibles
         
         variateurSemaine = model.intVarArray(16, 0, 100);
-        variateurJoursRepo = model.intVarArray("objective", 16, 0, 1);
+        variateurJoursRepo = model.intVarArray(16, 0, 1);
         joursRepo1erSemaine = model.intVarArray(16, 0, 10);
         joursRepo2emSemaine = model.intVarArray(16, 0, 10);
         somme2semaines = model.intVarArray(16, 0, 100);
@@ -118,7 +164,23 @@ public class Main {
         somme1 = model.intVarArray(16, 0, 100, false); // variables secondaires
         zero = model.intVar(0);
         int i, k, l, e;        
-                
+        
+        variateurJoursRepo[0] = model.intVar(0);
+        variateurJoursRepo[1] = model.intVar(0);
+        variateurJoursRepo[2] = model.intVar(0);
+        variateurJoursRepo[3] = model.intVar(0);
+        variateurJoursRepo[4] = model.intVar(0);
+        variateurJoursRepo[5] = model.intVar(0);
+        variateurJoursRepo[6] = model.intVar(0);
+        variateurJoursRepo[7] = model.intVar(0);
+        variateurJoursRepo[8] = model.intVar(0);
+        variateurJoursRepo[9] = model.intVar(0);
+        variateurJoursRepo[10] = model.intVar(0);
+        variateurJoursRepo[11] = model.intVar(0);
+        variateurJoursRepo[12] = model.intVar(0);
+        variateurJoursRepo[13] = model.intVar(0);
+        variateurJoursRepo[14] = model.intVar(0);
+        
         for (e = 0; e < 16; e++) {
             
             for (i = 0; i < 10; i++) {
@@ -127,24 +189,24 @@ public class Main {
                 t2[e][i] = model.allEqual(cr[e][i], model.intVar(0)).reify(); // 1 si jour de repo
                 
                 // Jours de 7h (de t2[e][10] à t2[e][19])
-                t2[e][10+i] = model.allEqual(cr[e][i], model.intVar(5)).reify(); // 1 si jour de 7h
+                t2[e][10+i] = model.allEqual(cr[e][i], model.intVar(5)).reify(); // 1 si jour de 7h (12-19h)
                 
                 
                 // Jours de 10h-1/2 (de t2[e][20] à t2[e][29])
-                t2[e][20+i] = model.allEqual(cr[e][i], model.intVar(1)).reify(); // 1 si jour de 10h/6h45
+                t2[e][20+i] = model.allEqual(cr[e][i], model.intVar(1)).reify(); // 1 si jour de 10h (6h45-16h45)
                 
                 // Jours de 10h-2/2 (de t2[e][30] à t2[e][39])
-                t2[e][30+i] = model.allEqual(cr[e][i], model.intVar(3)).reify(); // 1 si jour de 10h/7h30
+                t2[e][30+i] = model.allEqual(cr[e][i], model.intVar(3)).reify(); // 1 si jour de 10h (7h30-17h30)
                 
                 // Jours de 10h (de t2[e][40] à t2[e][49])
                 model.arithm(t2[e][20+i], "+", t2[e][30+i], "=", t2[e][40+i]).post(); // 1 si jour de 10h
                 
 
                 // Jours de 11h-1/2 (de t2[e][50] à t2[e][59])
-                t2[e][50+i] = model.allEqual(cr[e][i], model.intVar(2)).reify(); // 1 si jour de 11h/6h45
+                t2[e][50+i] = model.allEqual(cr[e][i], model.intVar(2)).reify(); // 1 si jour de 11h (6h45-17h45)
                 
                 // Jours de 11h-2/2 (de t2[e][60] à t2[e][69])
-                t2[e][60+i] = model.allEqual(cr[e][i], model.intVar(4)).reify(); // 1 si jour de 11h/7h30
+                t2[e][60+i] = model.allEqual(cr[e][i], model.intVar(4)).reify(); // 1 si jour de 11h (7h30-18h30)
                 
                 // Jours de 11h (de t2[e][70] à t2[e][79])
                 model.arithm(t2[e][50+i], "+", t2[e][60+i], "=", t2[e][70+i]).post(); // 1 si jour de 11h
@@ -159,11 +221,11 @@ public class Main {
                 // 11 si le jour i fait 11h (de t2[e][100] à t2[e][109])
                 model.arithm(t2[e][70+i], "*", model.intVar(11), "=", t2[e][100+i]).post();
                 
-                
             }
-            
-            
-            
+        }
+        
+        
+        for (e = 0; e < 16; e++) {
             
             // Ajout des contraintes de temps sur une semaine
             model.arithm(s[e], "*", model.intVar(2), "=", somme2semaines[e]).post(); // t[e][0] contient les heures à faire en 2 semaines
@@ -180,10 +242,12 @@ public class Main {
             addConstraintOnSommeJoursRepo2emSemaine("=", joursRepo2emSemaine); // recup des jours de repo
             model.arithm(joursRepo1erSemaine[e], "+", variateurJoursRepo[e], ">=", joursRepo2emSemaine[e]).post();
             model.arithm(joursRepo1erSemaine[e], "-", variateurJoursRepo[e], "<=", joursRepo2emSemaine[e]).post();
+            addConstraintOnSommeHeures1erEt2emSemaine("=", somme2semaines); // Somme des 2 semaines = 2 * s[e] TMP
             
-            addConstraintOnSommeHeures1erEt2emSemaine("=", somme2semaines); // Somme des 2 semaines = 2 * s[e]*/
-            
-            //addConstraintOnSommeHeures1erEt2emSemaine("=", somme1);
+            addConstraintOnSommeCommenceA6h1erSemaine(">=", 5);
+            addConstraintOnSommeCommenceA6h1erSemaine("<=", 6);
+            addConstraintOnSommeCommenceA6h2emSemaine(">=", 5);
+            addConstraintOnSommeCommenceA6h2emSemaine("<=", 6);
             
             /*// t[e][107] : 10h la première semaine
             t[e][109] = model.allEqual(j[e][0], model.intVar(10)).reify(); // nombre de 10h du 1er jour
@@ -293,7 +357,6 @@ public class Main {
             model.arithm(t[e][16], ">", 0).post();*/
                     
         }
-        
         
         // Contraintes verticales
         
@@ -450,8 +513,8 @@ public class Main {
         }
 
         Solver solver = model.getSolver();
-        model.setObjective(Model.MINIMIZE, variateurJoursRepo[0]);
-        /*model.setObjective(Model.MINIMIZE, variateurJoursRepo[1]);
+        /*model.setObjective(Model.MINIMIZE, variateurJoursRepo[0]);
+        model.setObjective(Model.MINIMIZE, variateurJoursRepo[1]);
         model.setObjective(Model.MINIMIZE, variateurJoursRepo[2]);
         model.setObjective(Model.MINIMIZE, variateurJoursRepo[3]);
         model.setObjective(Model.MINIMIZE, variateurJoursRepo[4]);
@@ -469,7 +532,7 @@ public class Main {
         
         solver.setSearch(intVarSearch(s[15], // pour les heures de Marie
                 
-            cr[0][0], cr[0][1], cr[0][2], cr[0][3], cr[0][4], cr[0][5], cr[0][6], cr[0][7], cr[0][8], cr[0][9]/*,
+            cr[0][0], cr[0][1], cr[0][2], cr[0][3], cr[0][4], cr[0][5], cr[0][6], cr[0][7], cr[0][8], cr[0][9],
             cr[1][0], cr[1][1], cr[1][2], cr[1][3], cr[1][4], cr[1][5], cr[1][6], cr[1][7], cr[1][8], cr[1][9],
             cr[2][0], cr[2][1], cr[2][2], cr[2][3], cr[2][4], cr[2][5], cr[2][6], cr[2][7], cr[2][8], cr[2][9],
             cr[3][0], cr[3][1], cr[3][2], cr[3][3], cr[3][4], cr[3][5], cr[3][6], cr[3][7], cr[3][8], cr[3][9],
@@ -484,7 +547,7 @@ public class Main {
             cr[12][0], cr[12][1], cr[12][2], cr[12][3], cr[12][4], cr[12][5], cr[12][6], cr[12][7], cr[12][8], cr[12][9],
             cr[13][0], cr[13][1], cr[13][2], cr[13][3], cr[13][4], cr[13][5], cr[13][6], cr[13][7], cr[13][8], cr[13][9],
             cr[14][0], cr[14][1], cr[14][2], cr[14][3], cr[14][4], cr[14][5], cr[14][6], cr[14][7], cr[14][8], cr[14][9],
-            cr[15][0], cr[15][1], cr[15][2], cr[15][3], cr[15][4], cr[15][5], cr[15][6], cr[15][7], cr[15][8], cr[15][9]*/
+            cr[15][0], cr[15][1], cr[15][2], cr[15][3], cr[15][4], cr[15][5], cr[15][6], cr[15][7], cr[15][8], cr[15][9]
             
         ));
         
@@ -526,6 +589,8 @@ public class Main {
                     //", nombre de 7h : " + t[e][13].getValue()
                     //", nombre de 11h : " + t[e][15].getValue()
                     //", nombre de jours de repo : " + t[e][49].getValue()
+                    if (i == 4) System.out.print(", repo : " + joursRepo1erSemaine[e].getValue());
+                    if (i == 9) System.out.print(", repo : " + joursRepo2emSemaine[e].getValue());
                     //if (i == 9) System.out.print(", total : trouvé " + somme1[e].getValue());
                     if (i == 9) System.out.print(", variateur : " + variateurJoursRepo[e].getValue());
                     //if (i == 4 || i == 9) System.out.print(", total s" + i/4 + " : " + somme1[e][i==4?14:30].getValue());

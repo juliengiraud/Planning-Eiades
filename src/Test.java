@@ -23,12 +23,13 @@ public class Test {
         test[0] = h;
         test[1] = j;
         
-        model.sum(test, "=", 8).post();
+        model.sum(test, "=", 11).post();
         
         int i = 0, k, l, e;
         
         Solver solver = model.getSolver();
         
+        model.setObjective(Model.MINIMIZE, h);
         solver.setSearch(intVarSearch(test));
         
         while(solver.solve()) {
