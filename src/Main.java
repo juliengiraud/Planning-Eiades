@@ -10,7 +10,7 @@ public class Main {
     private static IntVar[][] j, h, cr, t, t2;
     private static IntVar[] s, variateurSemaine, somme2semaines, sommeJoursRepo1erSemaine, joursRepo1erSemaine,
         joursRepo2emSemaine, variateurJoursRepo, somme1;
-    private static IntVar zero;
+    private static IntVar zero, toCinqOuSix, _toCinqOuSix;
     
     private static void addConstraintOnSommeHeures1erSemaine(String op, int v) {
         for (int e = 0; e < 16; e++) {
@@ -104,6 +104,15 @@ public class Main {
         }
     }
     
+    private static void addConstraintOnJour(int v, IntVar n) {
+        for (int i = 0; i < 10; i++) {
+            model.count(v, new IntVar[]{
+                cr[0][i], cr[1][i], cr[2][i], cr[3][i], cr[4][i], cr[5][i], cr[6][i], cr[7][i],
+                cr[8][i], cr[9][i], cr[10][i], cr[11][i], cr[12][i], cr[13][i], cr[14][i], cr[15][i]
+            }, n).post();
+        }
+    }
+    
     private static void addConstraintOnSommeCommenceA6h2emSemaine(String op, int v) {
         for (int i = 5; i < 10; i++) {
             model.sum(new IntVar[]{
@@ -152,6 +161,10 @@ public class Main {
         j = model.intVarMatrix(16, 10, new int[]{0, 7, 10, 11}); // nombre d'heures de travail pour un jour
         h = model.intVarMatrix(16, 10, new int[]{0, 1, 2}); // heure de départ
         cr = model.intVarMatrix(16, 10, new int[]{0, 1, 2, 3, 4, 5}); // crénaux possibles
+        
+        toCinqOuSix = model.intVar(0, 6);
+        _toCinqOuSix = model.intVar(0, 6);
+        model.arithm(model.intOffsetView(toCinqOuSix, -6), "-", model.intVar(0,1), "=", _toCinqOuSix).post();
         
         variateurSemaine = model.intVarArray(16, 0, 100);
         variateurJoursRepo = model.intVarArray(16, 0, 1);
@@ -224,6 +237,8 @@ public class Main {
             }
         }
         
+        addConstraintOnJour(1, toCinqOuSix);
+        addConstraintOnJour(2, _toCinqOuSix);
         
         for (e = 0; e < 16; e++) {
             
@@ -242,7 +257,7 @@ public class Main {
             addConstraintOnSommeJoursRepo2emSemaine("=", joursRepo2emSemaine); // recup des jours de repo
             model.arithm(joursRepo1erSemaine[e], "+", variateurJoursRepo[e], ">=", joursRepo2emSemaine[e]).post();
             model.arithm(joursRepo1erSemaine[e], "-", variateurJoursRepo[e], "<=", joursRepo2emSemaine[e]).post();
-            addConstraintOnSommeHeures1erEt2emSemaine("=", somme2semaines); // Somme des 2 semaines = 2 * s[e] TMP
+            //addConstraintOnSommeHeures1erEt2emSemaine("=", somme2semaines); // Somme des 2 semaines = 2 * s[e] TMP
             
             addConstraintOnSommeCommenceA6h1erSemaine(">=", 5);
             addConstraintOnSommeCommenceA6h1erSemaine("<=", 6);
