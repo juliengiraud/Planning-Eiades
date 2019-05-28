@@ -9,7 +9,7 @@ public class Main {
     private static IntVar[][] j, h;
     private static IntVar[] s, variateurSemaine, somme2semaines, sommeJoursRepo1erSemaine, joursRepo1erSemaine,
         joursRepo2emSemaine, variateurJoursRepo, somme1;
-    private static IntVar zero, un, deux, trois, cinqOuSix, onze;
+    private static IntVar zero, un, deux, trois, deuxOuTrois, cinqOuSix, huit, onze;
     
     private static int nb_eiades, i, k, l, e;
     
@@ -55,16 +55,6 @@ public class Main {
         for (e = 0; e < nb_eiades; e++) {
             model.sum(new IntVar[]{
             }, op, v[e]).post();
-        }
-    }
-
-    private static void addCountOnCommenceA6h(IntVar c) {
-        for (i = 0; i < 10; i++) {
-            model.count(1, new IntVar[]{
-                h[ 0][i], h[ 1][i], h[ 2][i], h[ 3][i], h[ 4][i], h[5][i], 
-                h[ 6][i], h[ 7][i], h[ 8][i], h[ 9][i], h[10][i],
-                h[11][i], h[12][i], h[13][i], h[14][i], h[15][i]
-            }, c).post();
         }
     }
     
@@ -132,8 +122,12 @@ public class Main {
         un = model.intVar(1);
         deux = model.intVar(2);
         trois = model.intVar(3);
+        deuxOuTrois = model.intVar(2, 3); // huitMoinsCinqOuSix
         cinqOuSix = model.intVar(5, 6);
+        huit = model.intVar(8);
         onze = model.intVar(11);
+        
+        model.arithm(huit, "-", cinqOuSix, "=", deuxOuTrois).post(); // huitMoinsCinqOuSix
         
         
         variateurJoursRepo[0] = zero;
@@ -154,7 +148,22 @@ public class Main {
         variateurJoursRepo[15] = zero;
         variateurJoursRepo[16] = zero;
         
+        // Contraintes du nombre d'eiades par créneaux horaires pour chaque jour
+        addCountOnCommenceA6h45(cinqOuSix);
+        addCountOnCommenceA7h30(deuxOuTrois);
+        addCountOnCommenceA8h(deux);
+        
         for (e = 0; e < nb_eiades; e++) {
+            for (i = 0; i < 10; i++) {
+                /* version minimum lignes*/
+                model.sum(new IntVar[]{h[e][i], j[e][i]}, "=", model.intVar(new int[]{0, 11, 12, 13, 14})).post();
+                model.count(model.intVar(new int[]{3, 10}), new IntVar[]{h[e][i], j[e][i]}, model.intVar(0)).post();
+                model.count(model.intVar(new int[]{0, 11}), new IntVar[]{h[e][i], j[e][i]}, model.intVar(0)).post();
+            }
+        }
+                
+        
+        /*for (e = 0; e < nb_eiades; e++) {
             for (i = 0; i < 10; i++) {
                 // jour de repos = jour de repos
                 model.ifThen(model.allEqual(h[e][i], zero), model.arithm(j[e][i], "<", 1));
@@ -173,7 +182,7 @@ public class Main {
                 // 8h-19h
                 model.ifThen(model.allEqual(h[e][i], trois), model.allEqual(j[e][i], onze));
             }
-        }
+        }*/
         
         for (e = 0; e < nb_eiades; e++) {
             // Ajout des contraintes de temps sur une semaine
@@ -201,8 +210,6 @@ public class Main {
         // Si 1 jour : soit lundi soit mercredi soit vendredi
         // Si 2 jours : (soit lundi soit mercredi soit vendredi) et (soit mardi soit jeudi)
         // Sinon (si 3 jours) : pas de contraintes
-        
-        addCountOnCommenceA6h(cinqOuSix);
         
         
         
@@ -292,4 +299,56 @@ public class Main {
         }
         System.out.println("Il y a " + l + " solutions");
     }
+    
+    // Fonctions de contraintes
+    
+    private static void addCountOnCommenceA6h45(IntVar c) {
+        if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
+        for (i = 0; i < 10; i++) {
+            model.count(1, new IntVar[]{
+                h[ 0][i], h[ 1][i], h[ 2][i], h[ 3][i], h[ 4][i], h[5][i], 
+                h[ 6][i], h[ 7][i], h[ 8][i], h[ 9][i], h[10][i], h[11][i],
+                h[12][i], h[13][i], h[14][i], h[15][i], h[16][i]
+            }, c).post();
+        }
+    }
+    
+    private static void addCountOnCommenceA7h30(IntVar c) {
+        if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
+        for (i = 0; i < 10; i++) {
+            model.count(2, new IntVar[]{
+                h[ 0][i], h[ 1][i], h[ 2][i], h[ 3][i], h[ 4][i], h[5][i], 
+                h[ 6][i], h[ 7][i], h[ 8][i], h[ 9][i], h[10][i],
+                h[11][i], h[12][i], h[13][i], h[14][i], h[15][i]
+            }, c).post();
+        }
+    }
+    
+    private static void addCountOnCommenceA8h(IntVar c) {
+        if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
+        for (i = 0; i < 10; i++) {
+            model.count(3, new IntVar[]{
+                h[ 0][i], h[ 1][i], h[ 2][i], h[ 3][i], h[ 4][i], h[5][i], 
+                h[ 6][i], h[ 7][i], h[ 8][i], h[ 9][i], h[10][i],
+                h[11][i], h[12][i], h[13][i], h[14][i], h[15][i]
+            }, c).post();
+        }
+    }
+    
 }
+
+/* notes résolution
+j  h s j+h j-h
+0  0 1 0   0   (repos)
+0  1 0 1   -1
+0  2 0 2   -2
+0  3 0 3   -3
+10 0 0 10  10
+10 1 1 11  9   (6h45-16h45)
+10 2 1 12  8   (7h30-17h30)
+10 3 0 13  7
+11 0 0 11  11
+11 1 1 12  10  (6h45-17h45)
+11 2 1 13  9   (7h30-18h30)
+11 3 1 14  8   (8h-19h)
+*/

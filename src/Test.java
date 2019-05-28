@@ -15,28 +15,32 @@ public class Test {
         Model model = new Model();
         
         
-        IntVar h = model.intVar(0, 2);
-        IntVar j = model.intVar(new int[]{0, 7, 10, 11});
-        IntVar h2 = model.intVar(0, 100);
-        IntVar h2j = model.intVar(0, 100);
-        IntVar[] test = model.intVarArray(2, 0, 100);
-        test[0] = h;
-        test[1] = j;
-        
-        model.count(0, test, model.intVar(1)).post();
+        IntVar h = model.intVar(0, 3);
+        IntVar j = model.intVar(new int[]{0, 10, 11});
         
         int i = 0, k, l, e;
         
+        /* version minimum lignes -> les tests montrent que c'est le plus rapide*/
+        model.sum(new IntVar[]{h, j}, "=", model.intVar(new int[]{0, 11, 12, 13, 14})).post();
+        model.count(model.intVar(new int[]{3, 10}), new IntVar[]{h, j}, model.intVar(0)).post();
+        model.count(model.intVar(new int[]{0, 11}), new IntVar[]{h, j}, model.intVar(0)).post();
+        
+        /*version simple -> les tests montrent que c'est plus lent
+        model.count(model.intVar(new int[]{0, 1}), new IntVar[]{h, j}, model.intVar(0)).post();
+        model.count(model.intVar(new int[]{0, 2}), new IntVar[]{h, j}, model.intVar(0)).post();
+        model.count(model.intVar(new int[]{0, 3}), new IntVar[]{h, j}, model.intVar(0)).post();
+        model.count(model.intVar(new int[]{0, 10}), new IntVar[]{h, j}, model.intVar(0)).post();
+        model.count(model.intVar(new int[]{0, 11}), new IntVar[]{h, j}, model.intVar(0)).post();
+        model.count(model.intVar(new int[]{10, 3}), new IntVar[]{h, j}, model.intVar(0)).post();*/
+        
         Solver solver = model.getSolver();
         
-        //model.setObjective(Model.MINIMIZE, h);
-        solver.setSearch(intVarSearch(test));
+        solver.setSearch(intVarSearch(j, h));
         
         while(solver.solve()) {
             System.out.println(
-                "h = " + h.getValue() +
-                ", j = " + j.getValue() +
-                ", h+j = " + (h.getValue() + j.getValue())
+                "j = " + j.getValue() +
+                ", h = " + h.getValue()
             );
             i++;
         }
