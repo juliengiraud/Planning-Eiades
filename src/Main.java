@@ -155,34 +155,18 @@ public class Main {
         
         for (e = 0; e < nb_eiades; e++) {
             for (i = 0; i < 10; i++) {
-                /* version minimum lignes*/
+                /* Les seules horaires possibles sont :
+                j=0  et h=0 -> repos
+                j=10 et h=1 -> 6h45---------16h45
+                j=10 et h=2   ->    7h30----------17h30
+                j=11 et h=1 -> 6h45---------------------17h45
+                j=11 et h=2   ->    7h30----------------------18h30
+                j=11 et h=3     ->       8h-------------------------19h*/
                 model.sum(new IntVar[]{h[e][i], j[e][i]}, "=", model.intVar(new int[]{0, 11, 12, 13, 14})).post();
                 model.count(model.intVar(new int[]{3, 10}), new IntVar[]{h[e][i], j[e][i]}, model.intVar(0)).post();
                 model.count(model.intVar(new int[]{0, 11}), new IntVar[]{h[e][i], j[e][i]}, model.intVar(0)).post();
             }
         }
-                
-        
-        /*for (e = 0; e < nb_eiades; e++) {
-            for (i = 0; i < 10; i++) {
-                // jour de repos = jour de repos
-                model.ifThen(model.allEqual(h[e][i], zero), model.arithm(j[e][i], "<", 1));
-            }
-        }
-        
-        for (e = 0; e < nb_eiades; e++) {
-            for (i = 0; i < 10; i++) {
-                // pas jour de repos = pas jour de repos
-                model.ifThen(model.arithm(h[e][i], ">", 0), model.arithm(j[e][i], ">", 0));
-            }
-        }
-        
-        for (e = 0; e < nb_eiades; e++) {
-            for (i = 0; i < 10; i++) {
-                // 8h-19h
-                model.ifThen(model.allEqual(h[e][i], trois), model.allEqual(j[e][i], onze));
-            }
-        }*/
         
         for (e = 0; e < nb_eiades; e++) {
             // Ajout des contraintes de temps sur une semaine
