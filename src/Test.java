@@ -15,13 +15,15 @@ public class Test {
         Model model = new Model();
         
         
-        IntVar h = model.intVar(0, 3);
-        IntVar j = model.intVar(new int[]{0, 10, 11});
-        IntVar test = model.intVar(0, 1);
+        IntVar h = model.intVar(1, 3);
+        IntVar j = model.intVar(new int[]{1, 2, 3});
+        
+        model.arithm(h, "*", j, "!=", 3).post();
         
         int i, k, l, e;
+        l = 37*2;
         
-        test = model.allEqual(h, j).reify();
+        System.out.println(l + " = " + (l/10-l%10) + "*10h + " + l%10 + "*11h");
         
         Solver solver = model.getSolver();
         

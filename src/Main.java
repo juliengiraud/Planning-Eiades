@@ -8,33 +8,10 @@ public class Main {
     private static Model model;
     private static IntVar[][] cr;
     private static IntVar[] s, variateurSemaine, somme2semaines, sommeJoursRepo1erSemaine, joursRepo1erSemaine,
-        joursRepo2emSemaine, variateurJoursRepo, somme1;
+        joursRepo2emSemaine, variateurJoursRepo, somme1, nbJoursReposS1, nbJoursReposS2;
     private static IntVar zero, un, deux, trois, cinq, huit, onze, deuxOuTrois, cinqOuSix, huitMoinsCinqOuSix;
     
     private static int nb_eiades, i, k, l, e;
-    
-    private static void addConstraintOnSommeHeures1erSemaine(String op, int v) {
-        for (e = 0; e < nb_eiades; e++) {}
-    }
-    private static void addConstraintOnSommeHeures1erSemaine(String op, IntVar[] v) {
-        for (e = 0; e < nb_eiades; e++) {}
-    }
-    
-    private static void addConstraintOnSommeHeures2emSemaine(String op, int v) {
-        for (e = 0; e < nb_eiades; e++) {}
-    }
-    
-    private static void addConstraintOnSommeHeures1erEt2emSemaine(String op, IntVar[] v) {
-        for (e = 0; e < nb_eiades; e++) {}
-    }
-    
-    private static void addConstraintOnSommeJoursRepo1erSemaine(String op, IntVar[] v) {
-        for (e = 0; e < nb_eiades; e++) {}
-    }
-    
-    private static void addConstraintOnSommeJoursRepo2emSemaine(String op, IntVar[] v) {
-        for (e = 0; e < nb_eiades; e++) {}
-    }
     
     public static void main(String[] args) {
         
@@ -86,7 +63,7 @@ public class Main {
         s[12] = model.intVar(31); // F. BOULAY, un seul 11h
         s[13] = model.intVar(36); // V. MARDIROSSIAN
         s[14] = model.intVar(21); // BEA REIX, un seul 11h
-        s[15] = model.intVar(29, 31); // MARIE, 3 jours de suite hors mardi-mercredi-jeudi possible 31.5h ?
+        s[15] = model.intVar(31); // MARIE, 3 jours de suite hors mardi-mercredi-jeudi
         s[16] = model.intVar(41); // intérimaire
         
         cr = model.intVarMatrix(nb_eiades, 10, 0, horaires.length-1); // index des horaires
@@ -105,31 +82,11 @@ public class Main {
         huit = model.intVar(8);
         onze = model.intVar(11);
         
+        
         deuxOuTrois = model.intVar(2, 3);
         cinqOuSix = model.intVar(5, 6);
-        
         huitMoinsCinqOuSix = model.intVar(2, 3);
         model.arithm(huit, "-", cinqOuSix, "=", huitMoinsCinqOuSix).post();
-        
-        
-        variateurJoursRepo[0] = zero;
-        variateurJoursRepo[1] = zero;
-        variateurJoursRepo[2] = zero;
-        variateurJoursRepo[3] = zero;
-        variateurJoursRepo[4] = zero;
-        variateurJoursRepo[5] = zero;
-        variateurJoursRepo[6] = zero;
-        variateurJoursRepo[7] = zero;
-        variateurJoursRepo[8] = zero;
-        variateurJoursRepo[9] = zero;
-        variateurJoursRepo[10] = zero;
-        variateurJoursRepo[11] = zero;
-        variateurJoursRepo[12] = zero;
-        variateurJoursRepo[13] = zero;
-        variateurJoursRepo[14] = zero;
-        variateurJoursRepo[15] = zero;
-        variateurJoursRepo[16] = zero;
-        
         // Contraintes du nombre d'eiades par créneaux horaires pour chaque jour
         /*addCountOnCommenceA6h45(cinqOuSix);
         addCountOnCommenceA7h30(huitMoinsCinqOuSix);
@@ -137,26 +94,27 @@ public class Main {
         addCountOnTermineEntre17h30Et17h45(deuxOuTrois);
         addCountOnTermineA18h30(un);*/
         
+        
+        //addConstraintOnSommeHeures1erSemaine("<=", 41); // max 41h / semaine : semaine 1 A REFAIRE
+        //addConstraintOnSommeHeures2emSemaine("<=", 41); // max 41h / semaine : semaine 2
+        //addConstraintOnSommeHeures1erEt2emSemaine("=", somme2semaines); // Somme des 2 semaines = 2 * s[e]
         for (e = 0; e < nb_eiades; e++) {
-            // Ajout des contraintes de temps sur une semaine
-            model.arithm(s[e], "*", deux, "=", somme2semaines[e]).post(); // _[e] = les heures à faire en 2 semaines
+            //System.out.println((s[e].getValue()*2)/10-(s[e].getValue()*2)%10 + " " + (s[e].getValue()*2)%10);
+            addCountOn10hDes2Semaines(model.intVar((s[e].getValue()*2)/10-(s[e].getValue()*2)%10), e);
+            addCountOn11hDes2Semaines(model.intVar((s[e].getValue()*2)%10), e);
         }
         
-        addConstraintOnSommeHeures1erSemaine("<=", 41); // max 41h / semaine : semaine 1
-        addConstraintOnSommeHeures2emSemaine("<=", 41); // max 41h / semaine : semaine 2
-            
-        // d'une semaine à l'autre on peut varier d'un jour de travail
-        // Ajout de la variation : temps de travail de la première semaine = temps voulu +- x
-        // nbjourrepos1ersemaine = nbjourrepos2emsemaine +-variateur :
-        // nbjourrepos1ersemaine >= nbjourrepos2emsemaine - variateur
-        // nbjourrepos1ersemaine <= nbjourrepos2emsemaine + variateur
-        addConstraintOnSommeJoursRepo1erSemaine("=", joursRepo1erSemaine); // recup des jours de repos
-        addConstraintOnSommeJoursRepo2emSemaine("=", joursRepo2emSemaine); // recup des jours de repos
+        nbJoursReposS1 = model.intVarArray(nb_eiades, 1, 3);
+        nbJoursReposS2 = model.intVarArray(nb_eiades, 1, 3);
         for (e = 0; e < nb_eiades; e++) {
-            model.arithm(joursRepo1erSemaine[e], "+", variateurJoursRepo[e], ">=", joursRepo2emSemaine[e]).post();
-            model.arithm(joursRepo1erSemaine[e], "-", variateurJoursRepo[e], "<=", joursRepo2emSemaine[e]).post();
+            //model.arithm(nbJoursReposS1[e], "*", nbJoursReposS2[e], "!=", 3).post(); A remettre si besoin
+            model.allEqual(nbJoursReposS1[e], nbJoursReposS2[e]);
         }
-        addConstraintOnSommeHeures1erEt2emSemaine("=", somme2semaines); // Somme des 2 semaines = 2 * s[e]
+        // d'une semaine à l'autre on peut varier d'un jour de travail
+        addCountOnJoursRepos1erSemaine(nbJoursReposS1); //  1,    2   ou  3 jour(s) de repos la 1er semaine
+        addCountOnJoursRepos2emSemaine(nbJoursReposS2); // 1|2, 1|2|3 ou 2|3 jour(s) de repos la 2em semaine
+
+        
             
             
         // Contraintes des jours de repos
@@ -217,6 +175,26 @@ public class Main {
         l = 0;
         while(solver.solve()) {
             for (e = 0; e < nb_eiades; e++) {
+                k = 0;
+                k += cr[e][0].getValue() == 1 || cr[e][0].getValue() == 2 ? 10 : 0;
+                k += cr[e][1].getValue() == 1 || cr[e][1].getValue() == 2 ? 10 : 0;
+                k += cr[e][2].getValue() == 1 || cr[e][2].getValue() == 2 ? 10 : 0;
+                k += cr[e][3].getValue() == 1 || cr[e][3].getValue() == 2 ? 10 : 0;
+                k += cr[e][4].getValue() == 1 || cr[e][4].getValue() == 2 ? 10 : 0;
+                k += cr[e][0].getValue() == 5 ? 11 : 0 + cr[e][1].getValue() == 5 ? 11 : 0;
+                k += cr[e][2].getValue() == 5 ? 11 : 0 + cr[e][3].getValue() == 5 ? 11 : 0;
+                k += cr[e][4].getValue() == 5 ? 11 : 0;
+                System.out.print(k + ", ");
+                k = 0;
+                k += cr[e][5].getValue() == 1 || cr[e][5].getValue() == 2 ? 10 : 0;
+                k += cr[e][6].getValue() == 1 || cr[e][6].getValue() == 2 ? 10 : 0;
+                k += cr[e][7].getValue() == 1 || cr[e][7].getValue() == 2 ? 10 : 0;
+                k += cr[e][8].getValue() == 1 || cr[e][8].getValue() == 2 ? 10 : 0;
+                k += cr[e][9].getValue() == 1 || cr[e][9].getValue() == 2 ? 10 : 0;
+                k += cr[e][5].getValue() == 5 ? 11 : 0;
+                k += cr[e][6].getValue() == 5 ? 11 : 0 + cr[e][7].getValue() == 5 ? 11 : 0;
+                k += cr[e][8].getValue() == 5 ? 11 : 0 + cr[e][9].getValue() == 5 ? 11 : 0;
+                System.out.print(k + ", ");
                 System.out.print(eiades[e] + " : ");
                 for (i = 0; i < 10; i++) {
                     if (i != 0) System.out.print(", ");
@@ -323,6 +301,37 @@ public class Main {
                 cr[12][i], cr[13][i], cr[14][i], cr[15][i], cr[16][i]
             }, c).post();
         }
+    }
+    
+    
+    private static void addCountOnJoursRepos1erSemaine(IntVar[] v) {
+        for (e = 0; e < nb_eiades; e++) {
+            model.count(0, new IntVar[]{
+                cr[e][0], cr[e][1], cr[e][2], cr[e][3], cr[e][4]
+            }, v[e]).post();
+        }
+    }
+    
+    private static void addCountOnJoursRepos2emSemaine(IntVar[] v) {
+        for (e = 0; e < nb_eiades; e++) {
+            model.count(0, new IntVar[]{
+                cr[e][5], cr[e][6], cr[e][7], cr[e][8], cr[e][9]
+            }, v[e]).post();
+        }
+    }
+    
+    private static void addCountOn10hDes2Semaines(IntVar v, int e) {
+        model.count(model.intVar(1,2), new IntVar[]{
+            cr[e][0], cr[e][1], cr[e][2], cr[e][3], cr[e][4],
+            cr[e][5], cr[e][6], cr[e][7], cr[e][8], cr[e][9]
+        }, v).post();
+    }
+    
+    private static void addCountOn11hDes2Semaines(IntVar v, int e) {
+        model.count(5, new IntVar[]{
+            cr[e][0], cr[e][1], cr[e][2], cr[e][3], cr[e][4],
+            cr[e][5], cr[e][6], cr[e][7], cr[e][8], cr[e][9]
+        }, v).post();
     }
     
     
