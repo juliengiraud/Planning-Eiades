@@ -6,56 +6,34 @@ import org.chocosolver.solver.variables.IntVar;
 public class Main {
     
     private static Model model;
-    private static IntVar[][] j, h;
+    private static IntVar[][] cr;
     private static IntVar[] s, variateurSemaine, somme2semaines, sommeJoursRepo1erSemaine, joursRepo1erSemaine,
         joursRepo2emSemaine, variateurJoursRepo, somme1;
-    private static IntVar zero, un, deux, trois, cinq, huit, onze, deuxOuTrois, cinqOuSix;
+    private static IntVar zero, un, deux, trois, cinq, huit, onze, deuxOuTrois, cinqOuSix, huitMoinsCinqOuSix;
     
     private static int nb_eiades, i, k, l, e;
     
     private static void addConstraintOnSommeHeures1erSemaine(String op, int v) {
-        for (e = 0; e < nb_eiades; e++) {
-            model.sum(new IntVar[]{
-                h[e][0], h[e][1], h[e][2], h[e][3], h[e][4]
-            }, op, v).post();
-        }
+        for (e = 0; e < nb_eiades; e++) {}
     }
     private static void addConstraintOnSommeHeures1erSemaine(String op, IntVar[] v) {
-        for (e = 0; e < nb_eiades; e++) {
-            model.sum(new IntVar[]{
-                h[e][0], h[e][1], h[e][2], h[e][3], h[e][4]
-            }, op, v[e]).post();
-        }
+        for (e = 0; e < nb_eiades; e++) {}
     }
     
     private static void addConstraintOnSommeHeures2emSemaine(String op, int v) {
-        for (e = 0; e < nb_eiades; e++) {
-            model.sum(new IntVar[]{
-                h[e][5], h[e][6], h[e][7], h[e][8], h[e][9]
-            }, op, v).post();
-        }
+        for (e = 0; e < nb_eiades; e++) {}
     }
     
     private static void addConstraintOnSommeHeures1erEt2emSemaine(String op, IntVar[] v) {
-        for (e = 0; e < nb_eiades; e++) {
-            model.sum(new IntVar[]{
-                j[e][0], j[e][1], j[e][2], j[e][3], j[e][4], j[e][5], j[e][6], j[e][7], j[e][8], j[e][9]
-            }, op, v[e]).post();
-        }
+        for (e = 0; e < nb_eiades; e++) {}
     }
     
     private static void addConstraintOnSommeJoursRepo1erSemaine(String op, IntVar[] v) {
-        for (e = 0; e < nb_eiades; e++) {
-            model.sum(new IntVar[]{
-            }, op, v[e]).post();
-        }
+        for (e = 0; e < nb_eiades; e++) {}
     }
     
     private static void addConstraintOnSommeJoursRepo2emSemaine(String op, IntVar[] v) {
-        for (e = 0; e < nb_eiades; e++) {
-            model.sum(new IntVar[]{
-            }, op, v[e]).post();
-        }
+        for (e = 0; e < nb_eiades; e++) {}
     }
     
     public static void main(String[] args) {
@@ -80,10 +58,12 @@ public class Main {
             "Intérimaire    "
         };
         String[] horaires = {
-            "repos   ", "6h45-", "7h30-", "  8h-"
-        };
-        String[] duree = {
-            "", "", "", "", "", "", "", "", "", "", "10h", "11h"
+            "repos     ", // j=0 et h=0, index=0
+            "6h45-16h45", // j=10 et h=1, index=1
+            "7h30-17h30", // j=10 et h=2, index=2
+            "6h45-17h45", // j=11 et h=1, index=3
+            "7h30-18h30", // j=11 et h=2, index=4
+            "8h-19h    " // j=11 et h=3, index=5
         };
         
         nb_eiades = eiades.length;
@@ -109,8 +89,7 @@ public class Main {
         s[15] = model.intVar(29, 31); // MARIE, 3 jours de suite hors mardi-mercredi-jeudi possible 31.5h ?
         s[16] = model.intVar(41); // intérimaire
         
-        j = model.intVarMatrix(nb_eiades, 10, new int[]{0, 10, 11}); // nombre d'heures de travail pour un jour
-        h = model.intVarMatrix(nb_eiades, 10, 0, 3); // heure de départ (0 -> repos, 1 -> 6h45, 2 -> 7h30, 3 -> 8h)
+        cr = model.intVarMatrix(nb_eiades, 10, 0, horaires.length-1); // index des horaires
         
         variateurSemaine = model.intVarArray(nb_eiades, 0, 100);
         variateurJoursRepo = model.intVarArray(nb_eiades, 0, 1);
@@ -126,10 +105,11 @@ public class Main {
         huit = model.intVar(8);
         onze = model.intVar(11);
         
-        deuxOuTrois = model.intVar(2, 3); // huitMoinsCinqOuSix
+        deuxOuTrois = model.intVar(2, 3);
         cinqOuSix = model.intVar(5, 6);
         
-        model.arithm(huit, "-", cinqOuSix, "=", deuxOuTrois).post(); // huitMoinsCinqOuSix
+        huitMoinsCinqOuSix = model.intVar(2, 3);
+        model.arithm(huit, "-", cinqOuSix, "=", huitMoinsCinqOuSix).post();
         
         
         variateurJoursRepo[0] = zero;
@@ -151,37 +131,19 @@ public class Main {
         variateurJoursRepo[16] = zero;
         
         // Contraintes du nombre d'eiades par créneaux horaires pour chaque jour
-        addCountOnCommenceA6h45(cinqOuSix);
-        addCountOnCommenceA7h30(deuxOuTrois);
-        addCountOnCommenceA8h(deux);
-        addCountOnTermineA16h45(cinq);
-        //addCountOnTermineA17h30(zero);
-        //addCountOnTermineA17h45(zero);
-        //addCountOnTermineA18h30(zero);
-        //addCountOnTermineA19h(zero);
-        
-        for (e = 0; e < nb_eiades; e++) {
-            for (i = 0; i < 10; i++) {
-                /* Les seules horaires possibles sont :
-                j=0  et h=0 -> repos
-                j=10 et h=1 -> 6h45---------16h45
-                j=10 et h=2   ->    7h30----------17h30
-                j=11 et h=1 -> 6h45---------------------17h45
-                j=11 et h=2   ->    7h30----------------------18h30
-                j=11 et h=3     ->       8h-------------------------19h*/
-                model.sum(new IntVar[]{h[e][i], j[e][i]}, "=", model.intVar(new int[]{0, 11, 12, 13, 14})).post();
-                model.count(model.intVar(new int[]{3, 10}), new IntVar[]{h[e][i], j[e][i]}, model.intVar(0)).post();
-                model.count(model.intVar(new int[]{0, 11}), new IntVar[]{h[e][i], j[e][i]}, model.intVar(0)).post();
-            }
-        }
+        /*addCountOnCommenceA6h45(cinqOuSix);
+        addCountOnCommenceA7h30(huitMoinsCinqOuSix);
+        addCountOnCommenceA8h(deux); // donc les 2 terminent à 19h
+        addCountOnTermineEntre17h30Et17h45(deuxOuTrois);
+        addCountOnTermineA18h30(un);*/
         
         for (e = 0; e < nb_eiades; e++) {
             // Ajout des contraintes de temps sur une semaine
-            model.arithm(s[e], "*", deux, "=", somme2semaines[e]).post(); // t[e][0] contient les heures à faire en 2 semaines
+            model.arithm(s[e], "*", deux, "=", somme2semaines[e]).post(); // _[e] = les heures à faire en 2 semaines
         }
         
-        addConstraintOnSommeHeures1erSemaine("<=", 41); // max 40h / semaine : semaine 1
-        addConstraintOnSommeHeures2emSemaine("<=", 41); // max 40h / semaine : semaine 2
+        addConstraintOnSommeHeures1erSemaine("<=", 41); // max 41h / semaine : semaine 1
+        addConstraintOnSommeHeures2emSemaine("<=", 41); // max 41h / semaine : semaine 2
             
         // d'une semaine à l'autre on peut varier d'un jour de travail
         // Ajout de la variation : temps de travail de la première semaine = temps voulu +- x
@@ -232,42 +194,23 @@ public class Main {
         
         solver.setSearch(intVarSearch(s[15], // pour les heures de Marie
                 
-            h[0][0], h[0][1], h[0][2], h[0][3], h[0][4], h[0][5], h[0][6], h[0][7], h[0][8], h[0][9],
-            h[1][0], h[1][1], h[1][2], h[1][3], h[1][4], h[1][5], h[1][6], h[1][7], h[1][8], h[1][9],
-            h[2][0], h[2][1], h[2][2], h[2][3], h[2][4], h[2][5], h[2][6], h[2][7], h[2][8], h[2][9],
-            h[3][0], h[3][1], h[3][2], h[3][3], h[3][4], h[3][5], h[3][6], h[3][7], h[3][8], h[3][9],
-            h[4][0], h[4][1], h[4][2], h[4][3], h[4][4], h[4][5], h[4][6], h[4][7], h[4][8], h[4][9],
-            h[5][0], h[5][1], h[5][2], h[5][3], h[5][4], h[5][5], h[5][6], h[5][7], h[5][8], h[5][9],
-            h[6][0], h[6][1], h[6][2], h[6][3], h[6][4], h[6][5], h[6][6], h[6][7], h[6][8], h[6][9],
-            h[7][0], h[7][1], h[7][2], h[7][3], h[7][4], h[7][5], h[7][6], h[7][7], h[7][8], h[7][9],
-            h[8][0], h[8][1], h[8][2], h[8][3], h[8][4], h[8][5], h[8][6], h[8][7], h[8][8], h[8][9],
-            h[9][0], h[9][1], h[9][2], h[9][3], h[9][4], h[9][5], h[9][6], h[9][7], h[9][8], h[9][9],
-            h[10][0], h[10][1], h[10][2], h[10][3], h[10][4], h[10][5], h[10][6], h[10][7], h[10][8], h[10][9],
-            h[11][0], h[11][1], h[11][2], h[11][3], h[11][4], h[11][5], h[11][6], h[11][7], h[11][8], h[11][9],
-            h[12][0], h[12][1], h[12][2], h[12][3], h[12][4], h[12][5], h[12][6], h[12][7], h[12][8], h[12][9],
-            h[13][0], h[13][1], h[13][2], h[13][3], h[13][4], h[13][5], h[13][6], h[13][7], h[13][8], h[13][9],
-            h[14][0], h[14][1], h[14][2], h[14][3], h[14][4], h[14][5], h[14][6], h[14][7], h[14][8], h[14][9],
-            h[15][0], h[15][1], h[15][2], h[15][3], h[15][4], h[15][5], h[15][6], h[15][7], h[15][8], h[15][9],
-            h[16][0], h[16][1], h[16][2], h[16][3], h[16][4], h[16][5], h[16][6], h[16][7], h[16][8], h[16][9],
-            
-            j[0][0], j[0][1], j[0][2], j[0][3], j[0][4], j[0][5], j[0][6], j[0][7], j[0][8], j[0][9],
-            j[1][0], j[1][1], j[1][2], j[1][3], j[1][4], j[1][5], j[1][6], j[1][7], j[1][8], j[1][9],
-            j[2][0], j[2][1], j[2][2], j[2][3], j[2][4], j[2][5], j[2][6], j[2][7], j[2][8], j[2][9],
-            j[3][0], j[3][1], j[3][2], j[3][3], j[3][4], j[3][5], j[3][6], j[3][7], j[3][8], j[3][9],
-            j[4][0], j[4][1], j[4][2], j[4][3], j[4][4], j[4][5], j[4][6], j[4][7], j[4][8], j[4][9],
-            j[5][0], j[5][1], j[5][2], j[5][3], j[5][4], j[5][5], j[5][6], j[5][7], j[5][8], j[5][9],
-            j[6][0], j[6][1], j[6][2], j[6][3], j[6][4], j[6][5], j[6][6], j[6][7], j[6][8], j[6][9],
-            j[7][0], j[7][1], j[7][2], j[7][3], j[7][4], j[7][5], j[7][6], j[7][7], j[7][8], j[7][9],
-            j[8][0], j[8][1], j[8][2], j[8][3], j[8][4], j[8][5], j[8][6], j[8][7], j[8][8], j[8][9],
-            j[9][0], j[9][1], j[9][2], j[9][3], j[9][4], j[9][5], j[9][6], j[9][7], j[9][8], j[9][9],
-            j[10][0], j[10][1], j[10][2], j[10][3], j[10][4], j[10][5], j[10][6], j[10][7], j[10][8], j[10][9],
-            j[11][0], j[11][1], j[11][2], j[11][3], j[11][4], j[11][5], j[11][6], j[11][7], j[11][8], j[11][9],
-            j[12][0], j[12][1], j[12][2], j[12][3], j[12][4], j[12][5], j[12][6], j[12][7], j[12][8], j[12][9],
-            j[13][0], j[13][1], j[13][2], j[13][3], j[13][4], j[13][5], j[13][6], j[13][7], j[13][8], j[13][9],
-            j[14][0], j[14][1], j[14][2], j[14][3], j[14][4], j[14][5], j[14][6], j[14][7], j[14][8], j[14][9],
-            j[15][0], j[15][1], j[15][2], j[15][3], j[15][4], j[15][5], j[15][6], j[15][7], j[15][8], j[15][9],
-            j[16][0], j[16][1], j[16][2], j[16][3], j[16][4], j[16][5], j[16][6], j[16][7], j[16][8], j[16][9]
-
+            cr[0][0], cr[0][1], cr[0][2], cr[0][3], cr[0][4], cr[0][5], cr[0][6], cr[0][7], cr[0][8], cr[0][9],
+            cr[1][0], cr[1][1], cr[1][2], cr[1][3], cr[1][4], cr[1][5], cr[1][6], cr[1][7], cr[1][8], cr[1][9],
+            cr[2][0], cr[2][1], cr[2][2], cr[2][3], cr[2][4], cr[2][5], cr[2][6], cr[2][7], cr[2][8], cr[2][9],
+            cr[3][0], cr[3][1], cr[3][2], cr[3][3], cr[3][4], cr[3][5], cr[3][6], cr[3][7], cr[3][8], cr[3][9],
+            cr[4][0], cr[4][1], cr[4][2], cr[4][3], cr[4][4], cr[4][5], cr[4][6], cr[4][7], cr[4][8], cr[4][9],
+            cr[5][0], cr[5][1], cr[5][2], cr[5][3], cr[5][4], cr[5][5], cr[5][6], cr[5][7], cr[5][8], cr[5][9],
+            cr[6][0], cr[6][1], cr[6][2], cr[6][3], cr[6][4], cr[6][5], cr[6][6], cr[6][7], cr[6][8], cr[6][9],
+            cr[7][0], cr[7][1], cr[7][2], cr[7][3], cr[7][4], cr[7][5], cr[7][6], cr[7][7], cr[7][8], cr[7][9],
+            cr[8][0], cr[8][1], cr[8][2], cr[8][3], cr[8][4], cr[8][5], cr[8][6], cr[8][7], cr[8][8], cr[8][9],
+            cr[9][0], cr[9][1], cr[9][2], cr[9][3], cr[9][4], cr[9][5], cr[9][6], cr[9][7], cr[9][8], cr[9][9],
+            cr[10][0], cr[10][1], cr[10][2], cr[10][3], cr[10][4], cr[10][5], cr[10][6], cr[10][7], cr[10][8], cr[10][9],
+            cr[11][0], cr[11][1], cr[11][2], cr[11][3], cr[11][4], cr[11][5], cr[11][6], cr[11][7], cr[11][8], cr[11][9],
+            cr[12][0], cr[12][1], cr[12][2], cr[12][3], cr[12][4], cr[12][5], cr[12][6], cr[12][7], cr[12][8], cr[12][9],
+            cr[13][0], cr[13][1], cr[13][2], cr[13][3], cr[13][4], cr[13][5], cr[13][6], cr[13][7], cr[13][8], cr[13][9],
+            cr[14][0], cr[14][1], cr[14][2], cr[14][3], cr[14][4], cr[14][5], cr[14][6], cr[14][7], cr[14][8], cr[14][9],
+            cr[15][0], cr[15][1], cr[15][2], cr[15][3], cr[15][4], cr[15][5], cr[15][6], cr[15][7], cr[15][8], cr[15][9],
+            cr[16][0], cr[16][1], cr[16][2], cr[16][3], cr[16][4], cr[16][5], cr[16][6], cr[16][7], cr[16][8], cr[16][9]
             
         ));
         
@@ -277,7 +220,7 @@ public class Main {
                 System.out.print(eiades[e] + " : ");
                 for (i = 0; i < 10; i++) {
                     if (i != 0) System.out.print(", ");
-                    System.out.print("j" + (i + 1) + " = " + horaires[h[e][i].getValue()] + duree[j[e][i].getValue()]);
+                    System.out.print("j" + (i+1) + "=" + horaires[cr[e][i].getValue()]);
                     //if (i == 9) System.out.print(", voulu  : " + somme2semaines[e].getValue());
                     //if (i == 9) System.out.print(", repos : " + joursRepo2emSemaine[e].getValue());
                     //if (i == 9) System.out.print(", total : trouvé " + somme1[e].getValue());
@@ -296,10 +239,10 @@ public class Main {
     private static void addCountOnCommenceA6h45(IntVar c) {
         if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
         for (i = 0; i < 10; i++) {
-            model.count(1, new IntVar[]{
-                h[ 0][i], h[ 1][i], h[ 2][i], h[ 3][i], h[ 4][i], h[5][i], 
-                h[ 6][i], h[ 7][i], h[ 8][i], h[ 9][i], h[10][i], h[11][i],
-                h[12][i], h[13][i], h[14][i], h[15][i], h[16][i]
+            model.count(model.intVar(new int[]{1, 3}), new IntVar[]{
+                cr[ 0][i], cr[ 1][i], cr[ 2][i], cr[ 3][i], cr[ 4][i], cr[5][i], 
+                cr[ 6][i], cr[ 7][i], cr[ 8][i], cr[ 9][i], cr[10][i], cr[11][i],
+                cr[12][i], cr[13][i], cr[14][i], cr[15][i], cr[16][i]
             }, c).post();
         }
     }
@@ -307,10 +250,10 @@ public class Main {
     private static void addCountOnCommenceA7h30(IntVar c) {
         if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
         for (i = 0; i < 10; i++) {
-            model.count(2, new IntVar[]{
-                h[ 0][i], h[ 1][i], h[ 2][i], h[ 3][i], h[ 4][i], h[5][i], 
-                h[ 6][i], h[ 7][i], h[ 8][i], h[ 9][i], h[10][i],
-                h[11][i], h[12][i], h[13][i], h[14][i], h[15][i]
+            model.count(model.intVar(new int[]{2, 4}), new IntVar[]{
+                cr[ 0][i], cr[ 1][i], cr[ 2][i], cr[ 3][i], cr[ 4][i], cr[5][i], 
+                cr[ 6][i], cr[ 7][i], cr[ 8][i], cr[ 9][i], cr[10][i], cr[11][i],
+                cr[12][i], cr[13][i], cr[14][i], cr[15][i], cr[16][i]
             }, c).post();
         }
     }
@@ -318,10 +261,10 @@ public class Main {
     private static void addCountOnCommenceA8h(IntVar c) {
         if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
         for (i = 0; i < 10; i++) {
-            model.count(3, new IntVar[]{
-                h[ 0][i], h[ 1][i], h[ 2][i], h[ 3][i], h[ 4][i], h[5][i], 
-                h[ 6][i], h[ 7][i], h[ 8][i], h[ 9][i], h[10][i],
-                h[11][i], h[12][i], h[13][i], h[14][i], h[15][i]
+            model.count(5, new IntVar[]{
+                cr[ 0][i], cr[ 1][i], cr[ 2][i], cr[ 3][i], cr[ 4][i], cr[5][i], 
+                cr[ 6][i], cr[ 7][i], cr[ 8][i], cr[ 9][i], cr[10][i], cr[11][i],
+                cr[12][i], cr[13][i], cr[14][i], cr[15][i], cr[16][i]
             }, c).post();
         }
     }
@@ -331,45 +274,55 @@ public class Main {
         if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
         for (i = 0; i < 10; i++) {
             model.count(1, new IntVar[]{
-                model.arithm(j[0][i], "*", h[0][i], "=", 10).reify(),
-                model.arithm(j[1][i], "*", h[1][i], "=", 10).reify(),
-                model.arithm(j[2][i], "*", h[2][i], "=", 10).reify(),
-                model.arithm(j[3][i], "*", h[3][i], "=", 10).reify(),
-                model.arithm(j[4][i], "*", h[4][i], "=", 10).reify(),
-                model.arithm(j[5][i], "*", h[5][i], "=", 10).reify(),
-                model.arithm(j[6][i], "*", h[6][i], "=", 10).reify(),
-                model.arithm(j[7][i], "*", h[7][i], "=", 10).reify(),
-                model.arithm(j[8][i], "*", h[8][i], "=", 10).reify(),
-                model.arithm(j[9][i], "*", h[9][i], "=", 10).reify(),
-                model.arithm(j[10][i], "*", h[10][i], "=", 10).reify(),
-                model.arithm(j[11][i], "*", h[11][i], "=", 10).reify(),
-                model.arithm(j[12][i], "*", h[12][i], "=", 10).reify(),
-                model.arithm(j[13][i], "*", h[13][i], "=", 10).reify(),
-                model.arithm(j[14][i], "*", h[14][i], "=", 10).reify(),
-                model.arithm(j[15][i], "*", h[15][i], "=", 10).reify(),
-                model.arithm(j[16][i], "*", h[16][i], "=", 10).reify(),
+                cr[ 0][i], cr[ 1][i], cr[ 2][i], cr[ 3][i], cr[ 4][i], cr[5][i], 
+                cr[ 6][i], cr[ 7][i], cr[ 8][i], cr[ 9][i], cr[10][i], cr[11][i],
+                cr[12][i], cr[13][i], cr[14][i], cr[15][i], cr[16][i]
             }, c).post();
         }
     }
     
     private static void addCountOnTermineA17h30(IntVar c) {
         if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
-        for (i = 0; i < 10; i++) {}
+        for (i = 0; i < 10; i++) {
+            model.count(2, new IntVar[]{
+                cr[ 0][i], cr[ 1][i], cr[ 2][i], cr[ 3][i], cr[ 4][i], cr[5][i], 
+                cr[ 6][i], cr[ 7][i], cr[ 8][i], cr[ 9][i], cr[10][i], cr[11][i],
+                cr[12][i], cr[13][i], cr[14][i], cr[15][i], cr[16][i]
+            }, c).post();
+        }
     }
     
     private static void addCountOnTermineA17h45(IntVar c) {
         if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
-        for (i = 0; i < 10; i++) {}
+        for (i = 0; i < 10; i++) {
+            model.count(3, new IntVar[]{
+                cr[ 0][i], cr[ 1][i], cr[ 2][i], cr[ 3][i], cr[ 4][i], cr[5][i], 
+                cr[ 6][i], cr[ 7][i], cr[ 8][i], cr[ 9][i], cr[10][i], cr[11][i],
+                cr[12][i], cr[13][i], cr[14][i], cr[15][i], cr[16][i]
+            }, c).post();
+        }
     }
     
     private static void addCountOnTermineA18h30(IntVar c) {
         if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
-        for (i = 0; i < 10; i++) {}
+        for (i = 0; i < 10; i++) {
+            model.count(4, new IntVar[]{
+                cr[ 0][i], cr[ 1][i], cr[ 2][i], cr[ 3][i], cr[ 4][i], cr[5][i], 
+                cr[ 6][i], cr[ 7][i], cr[ 8][i], cr[ 9][i], cr[10][i], cr[11][i],
+                cr[12][i], cr[13][i], cr[14][i], cr[15][i], cr[16][i]
+            }, c).post();
+        }
     }
     
-    private static void addCountOnTermineA19h(IntVar c) {
+    private static void addCountOnTermineEntre17h30Et17h45(IntVar c) {
         if (17 != nb_eiades) System.out.print(0/0); // Problème avec le nombre d'eiades
-        for (i = 0; i < 10; i++) {}
+        for (i = 0; i < 10; i++) {
+            model.count(model.intVar(new int[]{2, 3}), new IntVar[]{
+                cr[ 0][i], cr[ 1][i], cr[ 2][i], cr[ 3][i], cr[ 4][i], cr[5][i], 
+                cr[ 6][i], cr[ 7][i], cr[ 8][i], cr[ 9][i], cr[10][i], cr[11][i],
+                cr[12][i], cr[13][i], cr[14][i], cr[15][i], cr[16][i]
+            }, c).post();
+        }
     }
     
     
