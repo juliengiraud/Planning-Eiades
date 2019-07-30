@@ -10,27 +10,46 @@ import org.chocosolver.solver.constraints.IIntConstraintFactory;
 
 public class Test {
     
+    private static int get10hAFaire(int h) {
+        return h%10 == 0 ? h/10 : get10hAFaire(h-11*(h%10));
+    }
+    
+    private static int get11hAFaire(int h) {
+        return h%10;
+    }
+    
     public static void main(String[] args) {
+        
+        int test, i;
+        int tab[] = new int[] {20, 21, 25, 30, 31, 33, 36, 40, 41};
+        for (i = 0; i < tab.length; i++) {
+            test = tab[i]*4;
+            System.out.println(tab[i] + " " + test + " " + test%10 + " "+ test/10 + " "+ test%11 + " " + test/11);
+            System.out.println(get10hAFaire(test) + "*10h + " + get11hAFaire(test) + "*11h\n");
+        }
         
         Model model = new Model();
         
         
-        IntVar nbCommenceA6h45 = model.intVar(5, 6);
-        IntVar nbTermineA16h45 = model.intVar(1, 6); // car > 0
-        IntVar nbTermineA17h45 = model.intVar(1, 6); // car > 0
-        IntVar nbCommenceA7h30 = model.intVar(2, 3);
-        IntVar nbTermineA17h30 = model.intVar(1, 2); // car > 0 et < 3
-        IntVar nbTermineA18h30 = model.intVar(1);
-        IntVar nbCommenceA8h = model.intVar(2);
+        IntVar nbCommenceA6h45 = model.intVar(5, 6); /* b=5 ou 6 */
+        IntVar nbTermineA16h45 = model.intVar(0, 6); /* b1>=0 */
+        IntVar nbTermineA17h45 = model.intVar(0, 6); /* b2>=0 */
+        IntVar nbCommenceA7h30 = model.intVar(3, 4); /* c=3 ou 4 */
+        IntVar nbTermineA17h30 = model.intVar(2, 3); /* c1>=0 et c1+c2=c*/
+        IntVar nbTermineA18h30 = model.intVar(1); /* c2=1 */
+        IntVar nbCommenceA9h = model.intVar(1); /* d=1 */
         
-        model.arithm(nbCommenceA6h45, "+", nbCommenceA7h30, "=", 8).post();
-        model.arithm(nbTermineA16h45, "+", nbTermineA17h45, "=", nbCommenceA6h45).post();
-        model.arithm(nbTermineA17h30, "+", nbTermineA18h30, "=", nbCommenceA7h30).post();
-        model.arithm(nbTermineA16h45, "<", nbCommenceA6h45).post();
-        model.arithm(nbTermineA17h45, "<", nbCommenceA6h45).post();
+        model.arithm(nbCommenceA6h45, "+", nbCommenceA7h30, "=", 9).post(); /* b+c=9 */
+        model.arithm(nbTermineA16h45, "+", nbTermineA17h45, "=", nbCommenceA6h45).post(); /* b1+b2=b */
+        model.arithm(nbTermineA17h30, "+", nbTermineA18h30, "=", nbCommenceA7h30).post(); /* c1+c2=c */
+        model.arithm(nbTermineA17h45, "+", nbCommenceA7h30, ">=", 4).post(); /* b2+c>=4 */
+        model.arithm(nbTermineA16h45, "<=", nbCommenceA6h45).post();
+        model.arithm(nbTermineA17h45, "<=", nbCommenceA6h45).post();
+        model.arithm(nbTermineA17h30, "<=", nbCommenceA7h30).post();
+        model.arithm(nbTermineA18h30, "<=", nbCommenceA7h30).post();
 
         
-        int i, k, l, e;
+        int k, l, e;
         
         Solver solver = model.getSolver();
         
@@ -41,18 +60,18 @@ public class Test {
             System.out.println(
                 "   " + nbCommenceA6h45.getValue() +
                 "    " + nbCommenceA7h30.getValue() +
-                "    " + nbCommenceA8h.getValue() +
+                "    " + nbCommenceA9h.getValue() +
                 "   " + nbTermineA16h45.getValue() +
-                "     " + nbTermineA17h45.getValue() +
                 "     " + nbTermineA17h30.getValue() +
+                "     " + nbTermineA17h45.getValue() +
                 "     " + nbTermineA18h30.getValue() +
-                "     " + nbCommenceA8h.getValue()
+                "     " + nbCommenceA9h.getValue()
             );
             System.out.println(nbTermineA16h45.getValue() + " 6h45         16h45");
             System.out.println(nbTermineA17h45.getValue() + " 6h45                     17h45");
             System.out.println(nbTermineA17h30.getValue() + "      7h30          17h30");
             System.out.println(nbTermineA18h30.getValue() + "      7h30                      18h30");
-            System.out.println(nbCommenceA8h.getValue()   + "           8h                         19h\n\n");
+            System.out.println(nbCommenceA9h.getValue()   + "           9h                         19h\n\n");
             i++;
         }
         System.out.println("Il y a " + i + " solutions");
