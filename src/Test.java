@@ -32,7 +32,7 @@ public class Test {
         
         
         IntVar nbCommenceA6h45 = model.intVar(5, 6); /* b=5 ou 6 */
-        IntVar nbTermineA16h45 = model.intVar(4, 6); /* b1>=4 */
+        IntVar nbTermineA16h45 = model.intVar(4, 5); /* b1>=4 */
         IntVar nbTermineA17h45 = model.intVar(0, 2); /* b2>=0 */
         IntVar nbCommenceA7h30 = model.intVar(3, 4); /* c=3 ou 4 */
         IntVar nbTermineA17h30 = model.intVar(2, 3); /* c1>=0 et c1+c2=c*/
@@ -42,12 +42,7 @@ public class Test {
         model.arithm(nbCommenceA6h45, "+", nbCommenceA7h30, "=", 9).post(); /* b+c=9 */
         model.arithm(nbTermineA16h45, "+", nbTermineA17h45, "=", nbCommenceA6h45).post(); /* b1+b2=b */
         model.arithm(nbTermineA17h30, "+", nbTermineA18h30, "=", nbCommenceA7h30).post(); /* c1+c2=c */
-        model.arithm(nbTermineA17h45, "+", nbCommenceA7h30, ">=", 4).post(); /* b2+c>=4 */
-        model.arithm(nbTermineA16h45, "<=", nbCommenceA6h45).post();
-        model.arithm(nbTermineA17h45, "<=", nbCommenceA6h45).post();
-        model.arithm(nbTermineA17h30, "<=", nbCommenceA7h30).post();
-        model.arithm(nbTermineA18h30, "<=", nbCommenceA7h30).post();
-
+        
         
         Solver solver = model.getSolver();
         
