@@ -20,20 +20,20 @@ public class Test {
     
     public static void main(String[] args) {
         
-        int test, i;
-        int tab[] = new int[] {20, 21, 25, 30, 31, 33, 36, 40, 41};
+        int k, l, e, test, i;
+        /*int tab[] = new int[] {20, 21, 25, 30, 31, 33, 36, 40, 41};
         for (i = 0; i < tab.length; i++) {
             test = tab[i]*4;
             System.out.println(tab[i] + " " + test + " " + test%10 + " "+ test/10 + " "+ test%11 + " " + test/11);
             System.out.println(get10hAFaire(test) + "*10h + " + get11hAFaire(test) + "*11h\n");
-        }
+        }*/
         
         Model model = new Model();
         
         
         IntVar nbCommenceA6h45 = model.intVar(5, 6); /* b=5 ou 6 */
-        IntVar nbTermineA16h45 = model.intVar(0, 6); /* b1>=0 */
-        IntVar nbTermineA17h45 = model.intVar(0, 6); /* b2>=0 */
+        IntVar nbTermineA16h45 = model.intVar(4, 6); /* b1>=4 */
+        IntVar nbTermineA17h45 = model.intVar(0, 2); /* b2>=0 */
         IntVar nbCommenceA7h30 = model.intVar(3, 4); /* c=3 ou 4 */
         IntVar nbTermineA17h30 = model.intVar(2, 3); /* c1>=0 et c1+c2=c*/
         IntVar nbTermineA18h30 = model.intVar(1); /* c2=1 */
@@ -48,8 +48,6 @@ public class Test {
         model.arithm(nbTermineA17h30, "<=", nbCommenceA7h30).post();
         model.arithm(nbTermineA18h30, "<=", nbCommenceA7h30).post();
 
-        
-        int k, l, e;
         
         Solver solver = model.getSolver();
         
